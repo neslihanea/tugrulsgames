@@ -5,12 +5,117 @@
 document.addEventListener("DOMContentLoaded", () => {
   let userTeam = null;
   let currentMatchday = 1;
+  let currentSeasonNumber = 1;
   let leagueTable = [];
   let fixtures = [];
   let currentMatchEngine = null;
   let matchInterval = null;
   let selectedReferee = REFEREES[1]; // Default Halil Umut Meler
   let viewedRoundIndex = 0;
+
+  /* ==========================================================================
+     TRANSFER MARKET STATE & CONSTANTS
+     ========================================================================== */
+  let transferMode = "buy"; // 'buy' or 'sell'
+  let transferPosFilter = "ALL";
+  let transferNatFilter = "ALL";
+  let transferSearchQuery = "";
+  let transferSortBy = "rating_desc"; // 'rating_desc', 'rating_asc', 'age_asc', 'age_desc', 'val_desc', 'val_asc'
+
+  const SORT_BADGES = {
+    rating_desc: "(⭐ GEN ↓)",
+    rating_asc: "(⭐ GEN ↑)",
+    age_asc: "(👶 Yaş ↑)",
+    age_desc: "(🧓 Yaş ↓)",
+    val_desc: "(💰 Değer ↓)",
+    val_asc: "(🏷️ Değer ↑)"
+  };
+
+  const FLAG_TO_COUNTRY_NAME = {
+    '🇹🇷': 'Türkiye',
+    '🇩🇪': 'Almanya',
+    '🇦🇱': 'Arnavutluk',
+    '🇦🇴': 'Angola',
+    '🇦🇷': 'Arjantin',
+    '🇦🇹': 'Avusturya',
+    '🇧🇦': 'Bosna-Hersek',
+    '🇧🇪': 'Belçika',
+    '🇧🇬': 'Bulgaristan',
+    '🇧🇯': 'Benin',
+    '🇧🇷': 'Brezilya',
+    '🇨🇦': 'Kanada',
+    '🇨🇩': 'Demokratik Kongo',
+    '🇨🇭': 'İsviçre',
+    '🇨🇮': 'Fildişi Sahili',
+    '🇨🇱': 'Şili',
+    '🇨🇲': 'Kamerun',
+    '🇨🇴': 'Kolombiya',
+    '🇨🇻': 'Yeşil Burun Adaları',
+    '🇨🇿': 'Çekya',
+    '🇩🇰': 'Danimarka',
+    '🇩🇿': 'Cezayir',
+    '🇪🇨': 'Ekvador',
+    '🇪🇬': 'Mısır',
+    '🇪🇸': 'İspanya',
+    '🇫🇮': 'Finlandiya',
+    '🇫🇷': 'Fransa',
+    '🇬🇦': 'Gabon',
+    '🇬🇧': 'Büyük Britanya',
+    '🇬🇭': 'Gana',
+    '🇬🇳': 'Gine',
+    '🇬🇷': 'Yunanistan',
+    '🇬🇼': 'Gine-Bissau',
+    '🇭🇷': 'Hırvatistan',
+    '🇭🇺': 'Macaristan',
+    '🇮🇪': 'İrlanda',
+    '🇮🇱': 'İsrail',
+    '🇮🇸': 'İzlanda',
+    '🇮🇹': 'İtalya',
+    '🇯🇲': 'Jamaika',
+    '🇯🇵': 'Japonya',
+    '🇰🇪': 'Kenya',
+    '🇰🇷': 'Güney Kore',
+    '🇱🇺': 'Lüksemburg',
+    '🇱🇾': 'Libya',
+    '🇲🇦': 'Fas',
+    '🇲🇩': 'Moldova',
+    '🇲🇪': 'Karadağ',
+    '🇲🇰': 'Kuzey Makedonya',
+    '🇲🇱': 'Mali',
+    '🇲🇽': 'Meksika',
+    '🇲🇿': 'Mozambik',
+    '🇳🇬': 'Nijerya',
+    '🇳🇱': 'Hollanda',
+    '🇳🇴': 'Norveç',
+    '🇳🇿': 'Yeni Zelanda',
+    '🇵🇦': 'Panama',
+    '🇵🇪': 'Peru',
+    '🇵🇱': 'Polonya',
+    '🇵🇹': 'Portekiz',
+    '🇵🇾': 'Paraguay',
+    '🇷🇴': 'Romanya',
+    '🇷🇸': 'Sırbistan',
+    '🇷🇺': 'Rusya',
+    '🇸🇪': 'İsveç',
+    '🇸🇮': 'Slovenya',
+    '🇸🇰': 'Slovakya',
+    '🇸🇳': 'Senegal',
+    '🇸🇷': 'Surinam',
+    '🇹🇬': 'Togo',
+    '🇹🇹': 'Trinidad ve Tobago',
+    '🇺🇦': 'Ukrayna',
+    '🇺🇸': 'ABD',
+    '🇺🇾': 'Uruguay',
+    '🇺🇿': 'Özbekistan',
+    '🇻🇪': 'Venezuela',
+    '🇽🇰': 'Kosova',
+    '🇿🇲': 'Zambiya',
+    '🇿🇼': 'Zimbabve',
+    '🏴󠁧󠁢󠁥󠁮󠁧󠁿': 'İngiltere',
+    '🏴󠁧󠁢󠁳󠁣󠁴󠁿': 'İskoçya',
+    '🏴󠁧󠁢󠁷󠁬󠁳󠁿': 'Galler',
+    '🏳️': 'Diğer'
+  };
 
   initApp();
 
@@ -30,6 +135,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setupTransferControls();
     setupTrainingControls();
     setupSeasonControls();
+    setupFixtureControls();
     generateLeagueSchedule();
     renderStandings();
     renderFixtures();
@@ -122,13 +228,13 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.addEventListener("click", (e) => {
         const teamId = e.currentTarget.dataset.id;
         userTeam = TEAMS_DATA.find(t => t.id === teamId);
-        
+
         applyTeamTheme(userTeam);
 
         const teamBadgeElem = document.getElementById("user-team-badge");
         teamBadgeElem.className = "badge-pill user-team-active";
         teamBadgeElem.innerHTML = `<img src="${userTeam.logo}" alt="${userTeam.name}" class="team-header-logo" onerror="this.outerHTML='<span>${userTeam.badge}</span>'"/> <span>${userTeam.name}</span>`;
-        
+
         document.getElementById("user-team-target").innerText = `Hedef: ${userTeam.target}.lik`;
         document.getElementById("user-team-info-box").style.display = "flex";
 
@@ -338,7 +444,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const gks = sortedSquad.filter(p => p.pos === "GK").slice(0, 1);
 
     const pickedSet = new Set([...fws, ...mfs, ...dfs, ...gks].map(p => p.name));
-    
+
     // Fill remaining if any position lacked enough players in squad
     let current11 = [...fws, ...mfs, ...dfs, ...gks];
     if (current11.length < 11) {
@@ -397,27 +503,27 @@ document.addEventListener("DOMContentLoaded", () => {
     pitchLayer.innerHTML = `
       <div class="pitch-row">
         ${fws.map(p => {
-          const idx = globalIndex++;
-          return createInteractivePlayerNode(p, "fw", idx, "FW");
-        }).join("")}
+      const idx = globalIndex++;
+      return createInteractivePlayerNode(p, "fw", idx, "FW");
+    }).join("")}
       </div>
       <div class="pitch-row">
         ${mfs.map(p => {
-          const idx = globalIndex++;
-          return createInteractivePlayerNode(p, "mf", idx, "MF");
-        }).join("")}
+      const idx = globalIndex++;
+      return createInteractivePlayerNode(p, "mf", idx, "MF");
+    }).join("")}
       </div>
       <div class="pitch-row">
         ${dfs.map(p => {
-          const idx = globalIndex++;
-          return createInteractivePlayerNode(p, "df", idx, "DF");
-        }).join("")}
+      const idx = globalIndex++;
+      return createInteractivePlayerNode(p, "df", idx, "DF");
+    }).join("")}
       </div>
       <div class="pitch-row">
         ${gks.map(p => {
-          const idx = globalIndex++;
-          return createInteractivePlayerNode(p, "gk", idx, "GK");
-        }).join("")}
+      const idx = globalIndex++;
+      return createInteractivePlayerNode(p, "gk", idx, "GK");
+    }).join("")}
       </div>
     `;
 
@@ -442,7 +548,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (benchContainer) {
       const starterSet = new Set(userTeam.starting11.map(p => p.name));
       const benchPlayers = userTeam.squad.filter(p => !starterSet.has(p.name));
-      
+
       benchContainer.innerHTML = benchPlayers.map(p => {
         const isSelected = selectedSwapPlayer && selectedSwapPlayer.source === "bench" && selectedSwapPlayer.player.name === p.name;
         const photoStyle = p.photo ? `background-image: url('${p.photo}');` : '';
@@ -486,12 +592,12 @@ document.addEventListener("DOMContentLoaded", () => {
   function showPlayerTooltip(e, player) {
     const tooltip = document.getElementById("player-tooltip");
     if (!tooltip) return;
-    
+
     document.getElementById("tt-name").innerText = player.name;
     document.getElementById("tt-nat").innerText = player.nat || "🏳️";
     document.getElementById("tt-age").innerText = player.age || "-";
     document.getElementById("tt-val").innerText = player.val || "-";
-    
+
     tooltip.classList.add("active");
     updatePlayerTooltipPosition(e);
   }
@@ -559,7 +665,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const isSelected = selectedSwapPlayer && selectedSwapPlayer.source === "pitch" && selectedSwapPlayer.pitchIndex === index;
     const isPosMismatch = player.pos !== slotPos && !(player.pos === "FW" && slotPos === "FW");
     const photoStyle = player.photo ? `background-image: url('${player.photo}');` : '';
-    
+
     return `
       <div class="player-card-node ${isSelected ? 'selected-for-swap' : ''}" data-index="${index}" title="İlk 11'i değiştirmek için tıklayın">
         <div class="player-badge-circle ${posClass}" style="${photoStyle}">
@@ -620,7 +726,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Second Half (Reverse fixtures)
-    const secondHalf = firstHalf.map(round => 
+    const secondHalf = firstHalf.map(round =>
       round.map(m => ({
         home: m.away,
         away: m.home,
@@ -632,7 +738,6 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     fixtures = [...firstHalf, ...secondHalf];
-    setupFixtureControls();
   }
 
   function setupFixtureControls() {
@@ -640,21 +745,21 @@ document.addEventListener("DOMContentLoaded", () => {
     const nextBtn = document.getElementById("next-round-btn");
 
     if (prevBtn) {
-      prevBtn.addEventListener("click", () => {
+      prevBtn.onclick = () => {
         if (viewedRoundIndex > 0) {
           viewedRoundIndex--;
           renderFixtures();
         }
-      });
+      };
     }
 
     if (nextBtn) {
-      nextBtn.addEventListener("click", () => {
+      nextBtn.onclick = () => {
         if (viewedRoundIndex < fixtures.length - 1) {
           viewedRoundIndex++;
           renderFixtures();
         }
-      });
+      };
     }
   }
 
@@ -684,10 +789,10 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
 
           <div class="fixture-score-box">
-            ${isPlayed 
-              ? `<span class="fixture-score-text">${match.score}</span><span class="fixture-status-label" style="color:var(--accent-green);">BİTTİ</span>`
-              : `<span class="fixture-vs-text">VS</span><span class="fixture-status-label">${isUserMatch ? 'SİZİN MAÇ' : 'BEKLİYOR'}</span>`
-            }
+            ${isPlayed
+          ? `<span class="fixture-score-text">${match.score}</span><span class="fixture-status-label" style="color:var(--accent-green);">BİTTİ</span>`
+          : `<span class="fixture-vs-text">VS</span><span class="fixture-status-label">${isUserMatch ? 'SİZİN MAÇ' : 'BEKLİYOR'}</span>`
+        }
           </div>
 
           <div class="fixture-team away">
@@ -836,7 +941,7 @@ document.addEventListener("DOMContentLoaded", () => {
     awayBadge.style.boxShadow = `0 0 18px ${nextFixture.away.theme ? nextFixture.away.theme.primaryGlow : 'rgba(255,255,255,0.2)'}`;
 
     document.getElementById("match-score-display").innerText = "0 - 0";
-    
+
     const timerBadge = document.getElementById("match-timer-badge");
     timerBadge.innerText = "00'";
     timerBadge.classList.remove("finished");
@@ -1300,10 +1405,10 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
     `;
 
-    const isTopEmpty = top10.length === 0 || 
-      (tabType === "goals" && top10[0].goals === 0) || 
-      (tabType === "assists" && top10[0].assists === 0) || 
-      (tabType === "saves" && top10[0].saves === 0) || 
+    const isTopEmpty = top10.length === 0 ||
+      (tabType === "goals" && top10[0].goals === 0) ||
+      (tabType === "assists" && top10[0].assists === 0) ||
+      (tabType === "saves" && top10[0].saves === 0) ||
       (tabType === "motm" && top10[0].motm === 0);
 
     if (isTopEmpty) {
@@ -1354,16 +1459,38 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ==========================================================================
      TRANSFER MARKET CONTROLLER
      ========================================================================== */
-  let transferMode = "buy"; // 'buy' or 'sell'
-  let transferPosFilter = "ALL";
-  let transferSearchQuery = "";
-
   function parseValToFloat(vStr) {
-    if (!vStr) return 1.0;
-    let str = String(vStr).replace("€", "").trim();
-    if (str.includes("M")) return parseFloat(str.replace("M", ""));
-    if (str.includes("K")) return parseFloat(str.replace("K", "")) / 1000;
+    if (!vStr || vStr === "-") return 1.0;
+    let str = String(vStr).replace("€", "").trim().toUpperCase();
+    if (str.includes("M")) return parseFloat(str.replace("M", "")) || 1.0;
+    if (str.includes("K")) return (parseFloat(str.replace("K", "")) || 1000) / 1000;
     return parseFloat(str) || 1.0;
+  }
+
+  function sortTransferPlayers(list, getPlayerFn) {
+    list.sort((a, b) => {
+      const pA = getPlayerFn ? getPlayerFn(a) : a;
+      const pB = getPlayerFn ? getPlayerFn(b) : b;
+      const valA = parseValToFloat(pA.val);
+      const valB = parseValToFloat(pB.val);
+
+      switch (transferSortBy) {
+        case "rating_desc":
+          return pB.rating - pA.rating || valB - valA;
+        case "rating_asc":
+          return pA.rating - pB.rating || valA - valB;
+        case "age_asc":
+          return pA.age - pB.age || pB.rating - pA.rating;
+        case "age_desc":
+          return pB.age - pA.age || pB.rating - pA.rating;
+        case "val_desc":
+          return valB - valA || pB.rating - pA.rating;
+        case "val_asc":
+          return valA - valB || pB.rating - pA.rating;
+        default:
+          return pB.rating - pA.rating;
+      }
+    });
   }
 
   function setupTransferControls() {
@@ -1403,6 +1530,136 @@ document.addEventListener("DOMContentLoaded", () => {
         renderTransferMarket();
       });
     }
+
+    // Sort dropdown toggle
+    const sortToggleBtn = document.getElementById("transfer-sort-toggle-btn");
+    const sortMenu = document.getElementById("transfer-sort-menu");
+    const natToggleBtn = document.getElementById("transfer-nat-toggle-btn");
+    const natMenu = document.getElementById("transfer-nat-menu");
+
+    if (sortToggleBtn && sortMenu) {
+      sortToggleBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (natMenu) natMenu.style.display = "none";
+        const isOpen = sortMenu.style.display === "block";
+        sortMenu.style.display = isOpen ? "none" : "block";
+      });
+
+      const sortOptions = sortMenu.querySelectorAll(".transfer-sort-option");
+      sortOptions.forEach(opt => {
+        opt.addEventListener("click", (e) => {
+          e.stopPropagation();
+          transferSortBy = e.currentTarget.dataset.sort;
+
+          sortOptions.forEach(o => {
+            o.classList.remove("active");
+            const check = o.querySelector(".sort-check");
+            if (check) check.style.display = "none";
+          });
+
+          e.currentTarget.classList.add("active");
+          const activeCheck = e.currentTarget.querySelector(".sort-check");
+          if (activeCheck) activeCheck.style.display = "inline";
+
+          const badgeElem = document.getElementById("transfer-sort-active-badge");
+          if (badgeElem && SORT_BADGES[transferSortBy]) {
+            badgeElem.innerText = SORT_BADGES[transferSortBy];
+          }
+
+          sortMenu.style.display = "none";
+          renderTransferMarket();
+        });
+      });
+    }
+
+    // Country dropdown initialization and event handlers
+    const natContainer = document.getElementById("transfer-nat-options-container");
+    if (natContainer) {
+      // Gather all unique flags
+      const flagsSet = new Set();
+      if (typeof TEAMS_DATA !== "undefined") {
+        TEAMS_DATA.forEach(t => t.squad && t.squad.forEach(p => p.nat && flagsSet.add(p.nat)));
+      }
+      Object.keys(FLAG_TO_COUNTRY_NAME).forEach(f => flagsSet.add(f));
+
+      const countriesList = Array.from(flagsSet).map(flag => ({
+        flag: flag,
+        name: FLAG_TO_COUNTRY_NAME[flag] || flag
+      }));
+
+      // Alphabetically sort by Turkish country name (A to Z)
+      countriesList.sort((a, b) => a.name.localeCompare(b.name, "tr", { sensitivity: "base" }));
+
+      let optionsHtml = `
+        <button class="transfer-nat-option ${transferNatFilter === 'ALL' ? 'active' : ''}" data-nat="ALL">
+          <span>🌍 Tümü (Tüm Ülkeler)</span>
+          <span class="nat-check" style="${transferNatFilter === 'ALL' ? '' : 'display:none;'}">✓</span>
+        </button>
+        <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 4px 0;"></div>
+      `;
+
+      countriesList.forEach(c => {
+        const isSelected = transferNatFilter === c.flag;
+        optionsHtml += `
+          <button class="transfer-nat-option ${isSelected ? 'active' : ''}" data-nat="${c.flag}">
+            <span>${c.flag} ${c.name}</span>
+            <span class="nat-check" style="${isSelected ? '' : 'display:none;'}">✓</span>
+          </button>
+        `;
+      });
+
+      natContainer.innerHTML = optionsHtml;
+
+      const natOptions = natContainer.querySelectorAll(".transfer-nat-option");
+      natOptions.forEach(opt => {
+        opt.addEventListener("click", (e) => {
+          e.stopPropagation();
+          transferNatFilter = e.currentTarget.dataset.nat;
+
+          natOptions.forEach(o => {
+            o.classList.remove("active");
+            const check = o.querySelector(".nat-check");
+            if (check) check.style.display = "none";
+          });
+
+          e.currentTarget.classList.add("active");
+          const activeCheck = e.currentTarget.querySelector(".nat-check");
+          if (activeCheck) activeCheck.style.display = "inline";
+
+          const badgeElem = document.getElementById("transfer-nat-active-badge");
+          if (badgeElem) {
+            if (transferNatFilter === "ALL") {
+              badgeElem.innerText = "(Tümü)";
+            } else {
+              const countryName = FLAG_TO_COUNTRY_NAME[transferNatFilter] || transferNatFilter;
+              badgeElem.innerText = `(${transferNatFilter} ${countryName})`;
+            }
+          }
+
+          if (natMenu) natMenu.style.display = "none";
+          renderTransferMarket();
+        });
+      });
+    }
+
+    if (natToggleBtn && natMenu) {
+      natToggleBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (sortMenu) sortMenu.style.display = "none";
+        const isOpen = natMenu.style.display === "block";
+        natMenu.style.display = isOpen ? "none" : "block";
+      });
+    }
+
+    // Close menus on outside click
+    document.addEventListener("click", (e) => {
+      if (sortMenu && !sortMenu.contains(e.target) && e.target !== sortToggleBtn && !sortToggleBtn?.contains(e.target)) {
+        sortMenu.style.display = "none";
+      }
+      if (natMenu && !natMenu.contains(e.target) && e.target !== natToggleBtn && !natToggleBtn?.contains(e.target)) {
+        natMenu.style.display = "none";
+      }
+    });
   }
 
   function renderTransferMarket() {
@@ -1438,37 +1695,99 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
-    // 2. FC Barcelona Squad
-    if (typeof BARCELONA_TEAM !== "undefined" && BARCELONA_TEAM && BARCELONA_TEAM.squad) {
-      if (!userTeam || userTeam.id !== BARCELONA_TEAM.id) {
-        BARCELONA_TEAM.squad.forEach(player => {
-          availableList.push({
-            player: player,
-            sellerTeam: BARCELONA_TEAM
-          });
+    // 2. European Club Squads (Barcelona, Real Madrid, Atletico, AC Milan, Tottenham, Man City, Man United, Chelsea, Arsenal)
+    const europeanTeams = [
+      typeof BARCELONA_TEAM !== "undefined" ? BARCELONA_TEAM : null,
+      typeof REAL_MADRID_TEAM !== "undefined" ? REAL_MADRID_TEAM : null,
+      typeof ATLETICO_MADRID_TEAM !== "undefined" ? ATLETICO_MADRID_TEAM : null,
+      typeof AC_MILAN_TEAM !== "undefined" ? AC_MILAN_TEAM : null,
+      typeof TOTTENHAM_TEAM !== "undefined" ? TOTTENHAM_TEAM : null,
+      typeof MAN_CITY_TEAM !== "undefined" ? MAN_CITY_TEAM : null,
+      typeof MAN_UNITED_TEAM !== "undefined" ? MAN_UNITED_TEAM : null,
+      typeof CHELSEA_TEAM !== "undefined" ? CHELSEA_TEAM : null,
+      typeof ARSENAL_TEAM !== "undefined" ? ARSENAL_TEAM : null,
+      typeof INTER_MILAN_TEAM !== "undefined" ? INTER_MILAN_TEAM : null,
+      typeof AS_ROMA_TEAM !== "undefined" ? AS_ROMA_TEAM : null,
+      typeof ATHLETIC_BILBAO_TEAM !== "undefined" ? ATHLETIC_BILBAO_TEAM : null,
+      typeof SPORTING_TEAM !== "undefined" ? SPORTING_TEAM : null,
+      typeof BENFICA_TEAM !== "undefined" ? BENFICA_TEAM : null,
+      typeof PORTO_TEAM !== "undefined" ? PORTO_TEAM : null,
+      typeof LIVERPOOL_TEAM !== "undefined" ? LIVERPOOL_TEAM : null,
+      typeof ASTON_VILLA_TEAM !== "undefined" ? ASTON_VILLA_TEAM : null,
+      typeof NEWCASTLE_TEAM !== "undefined" ? NEWCASTLE_TEAM : null,
+      typeof BRIGHTON_TEAM !== "undefined" ? BRIGHTON_TEAM : null,
+      typeof LEEDS_TEAM !== "undefined" ? LEEDS_TEAM : null,
+      typeof REAL_SOCIEDAD_TEAM !== "undefined" ? REAL_SOCIEDAD_TEAM : null,
+      typeof NAPOLI_TEAM !== "undefined" ? NAPOLI_TEAM : null,
+      typeof JUVENTUS_TEAM !== "undefined" ? JUVENTUS_TEAM : null,
+      typeof LAZIO_TEAM !== "undefined" ? LAZIO_TEAM : null,
+      typeof ATALANTA_TEAM !== "undefined" ? ATALANTA_TEAM : null,
+      typeof COMO_TEAM !== "undefined" ? COMO_TEAM : null,
+      typeof BAYERN_TEAM !== "undefined" ? BAYERN_TEAM : null,
+      typeof BVB_TEAM !== "undefined" ? BVB_TEAM : null,
+      typeof LEVERKUSEN_TEAM !== "undefined" ? LEVERKUSEN_TEAM : null,
+      typeof FIORENTINA_TEAM !== "undefined" ? FIORENTINA_TEAM : null,
+      typeof UDINESE_TEAM !== "undefined" ? UDINESE_TEAM : null,
+      typeof TORINO_TEAM !== "undefined" ? TORINO_TEAM : null,
+      typeof CAGLIARI_TEAM !== "undefined" ? CAGLIARI_TEAM : null,
+      typeof BOLOGNA_TEAM !== "undefined" ? BOLOGNA_TEAM : null,
+      typeof CELTA_VIGO_TEAM !== "undefined" ? CELTA_VIGO_TEAM : null,
+      typeof VILLARREAL_TEAM !== "undefined" ? VILLARREAL_TEAM : null,
+      typeof GETAFE_TEAM !== "undefined" ? GETAFE_TEAM : null,
+      typeof RAYO_TEAM !== "undefined" ? RAYO_TEAM : null,
+      typeof OSASUNA_TEAM !== "undefined" ? OSASUNA_TEAM : null,
+      typeof EVERTON_TEAM !== "undefined" ? EVERTON_TEAM : null,
+      typeof BRENTFORD_TEAM !== "undefined" ? BRENTFORD_TEAM : null,
+      typeof HULL_TEAM !== "undefined" ? HULL_TEAM : null,
+      typeof FOREST_TEAM !== "undefined" ? FOREST_TEAM : null,
+      typeof PALACE_TEAM !== "undefined" ? PALACE_TEAM : null,
+      typeof FULHAM_TEAM !== "undefined" ? FULHAM_TEAM : null,
+      typeof BOURNEMOUTH_TEAM !== "undefined" ? BOURNEMOUTH_TEAM : null,
+      typeof PSG_TEAM !== "undefined" ? PSG_TEAM : null,
+      typeof MARSEILLE_TEAM !== "undefined" ? MARSEILLE_TEAM : null,
+      typeof LYON_TEAM !== "undefined" ? LYON_TEAM : null,
+      typeof LILLE_TEAM !== "undefined" ? LILLE_TEAM : null,
+      typeof MONACO_TEAM !== "undefined" ? MONACO_TEAM : null,
+      typeof LENS_TEAM !== "undefined" ? LENS_TEAM : null,
+      typeof RENNES_TEAM !== "undefined" ? RENNES_TEAM : null,
+      typeof STRASBOURG_TEAM !== "undefined" ? STRASBOURG_TEAM : null,
+      typeof BRAGA_TEAM !== "undefined" ? BRAGA_TEAM : null,
+    ].filter(Boolean);
+
+    europeanTeams.forEach(euroTeam => {
+      if (!userTeam || userTeam.id !== euroTeam.id) {
+        euroTeam.squad.forEach(player => {
+          availableList.push({ player, sellerTeam: euroTeam });
         });
       }
+    });
+
+    // Filter by position
+    if (transferPosFilter !== "ALL") {
+      availableList = availableList.filter(item => item.player.pos === transferPosFilter);
     }
 
-    // Filter by position or special team
-    if (transferPosFilter === "BARCA") {
-      availableList = availableList.filter(item => item.sellerTeam.id === "barca");
-    } else if (transferPosFilter !== "ALL") {
-      availableList = availableList.filter(item => item.player.pos === transferPosFilter);
+    // Filter by nationality
+    if (transferNatFilter !== "ALL") {
+      availableList = availableList.filter(item => item.player.nat === transferNatFilter);
     }
 
     // Filter by search query
     if (transferSearchQuery) {
-      availableList = availableList.filter(item => 
-        item.player.name.toLowerCase().includes(transferSearchQuery) ||
-        item.sellerTeam.name.toLowerCase().includes(transferSearchQuery) ||
-        item.sellerTeam.shortName.toLowerCase().includes(transferSearchQuery) ||
-        item.player.nat.toLowerCase().includes(transferSearchQuery)
-      );
+      availableList = availableList.filter(item => {
+        const natName = FLAG_TO_COUNTRY_NAME[item.player.nat] || "";
+        return (
+          item.player.name.toLowerCase().includes(transferSearchQuery) ||
+          item.sellerTeam.name.toLowerCase().includes(transferSearchQuery) ||
+          item.sellerTeam.shortName.toLowerCase().includes(transferSearchQuery) ||
+          item.player.nat.toLowerCase().includes(transferSearchQuery) ||
+          natName.toLowerCase().includes(transferSearchQuery)
+        );
+      });
     }
 
-    // Sort by rating descending
-    availableList.sort((a, b) => b.player.rating - a.player.rating);
+    // Sort using selected criteria (rating, age, value)
+    sortTransferPlayers(availableList, item => item.player);
 
     if (availableList.length === 0) {
       grid.innerHTML = `
@@ -1483,7 +1802,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const p = item.player;
       const t = item.sellerTeam;
       const valFloat = parseValToFloat(p.val);
-      const fee = +(valFloat * 1.12).toFixed(1);
+      const fee = +((valFloat + 0.5).toFixed(2));
       const canAfford = userTeam.budget >= fee;
 
       const posClass = p.pos.toLowerCase();
@@ -1543,16 +1862,29 @@ document.addEventListener("DOMContentLoaded", () => {
     let squadList = [...userTeam.squad];
 
     // Filter by position
-    if (transferPosFilter !== "ALL" && transferPosFilter !== "BARCA") {
+    if (transferPosFilter !== "ALL") {
       squadList = squadList.filter(p => p.pos === transferPosFilter);
+    }
+
+    // Filter by nationality
+    if (transferNatFilter !== "ALL") {
+      squadList = squadList.filter(p => p.nat === transferNatFilter);
     }
 
     // Filter by search query
     if (transferSearchQuery) {
-      squadList = squadList.filter(p => p.name.toLowerCase().includes(transferSearchQuery));
+      squadList = squadList.filter(p => {
+        const natName = FLAG_TO_COUNTRY_NAME[p.nat] || "";
+        return (
+          p.name.toLowerCase().includes(transferSearchQuery) ||
+          p.nat.toLowerCase().includes(transferSearchQuery) ||
+          natName.toLowerCase().includes(transferSearchQuery)
+        );
+      });
     }
 
-    squadList.sort((a, b) => b.rating - a.rating);
+    // Sort using selected criteria
+    sortTransferPlayers(squadList, p => p);
 
     grid.innerHTML = squadList.map(p => {
       const valFloat = parseValToFloat(p.val);
@@ -1610,8 +1942,65 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     let sellerTeam = TEAMS_DATA.find(t => t.id === sellerTeamId);
-    if (!sellerTeam && typeof BARCELONA_TEAM !== "undefined" && BARCELONA_TEAM && BARCELONA_TEAM.id === sellerTeamId) {
-      sellerTeam = BARCELONA_TEAM;
+    if (!sellerTeam) {
+      const allEuroTeams = [
+        typeof BARCELONA_TEAM !== "undefined" ? BARCELONA_TEAM : null,
+        typeof REAL_MADRID_TEAM !== "undefined" ? REAL_MADRID_TEAM : null,
+        typeof ATLETICO_MADRID_TEAM !== "undefined" ? ATLETICO_MADRID_TEAM : null,
+        typeof AC_MILAN_TEAM !== "undefined" ? AC_MILAN_TEAM : null,
+        typeof TOTTENHAM_TEAM !== "undefined" ? TOTTENHAM_TEAM : null,
+        typeof MAN_CITY_TEAM !== "undefined" ? MAN_CITY_TEAM : null,
+        typeof MAN_UNITED_TEAM !== "undefined" ? MAN_UNITED_TEAM : null,
+        typeof CHELSEA_TEAM !== "undefined" ? CHELSEA_TEAM : null,
+        typeof ARSENAL_TEAM !== "undefined" ? ARSENAL_TEAM : null,
+        typeof INTER_MILAN_TEAM !== "undefined" ? INTER_MILAN_TEAM : null,
+        typeof AS_ROMA_TEAM !== "undefined" ? AS_ROMA_TEAM : null,
+        typeof ATHLETIC_BILBAO_TEAM !== "undefined" ? ATHLETIC_BILBAO_TEAM : null,
+        typeof SPORTING_TEAM !== "undefined" ? SPORTING_TEAM : null,
+        typeof BENFICA_TEAM !== "undefined" ? BENFICA_TEAM : null,
+        typeof PORTO_TEAM !== "undefined" ? PORTO_TEAM : null,
+        typeof LIVERPOOL_TEAM !== "undefined" ? LIVERPOOL_TEAM : null,
+        typeof ASTON_VILLA_TEAM !== "undefined" ? ASTON_VILLA_TEAM : null,
+        typeof NEWCASTLE_TEAM !== "undefined" ? NEWCASTLE_TEAM : null,
+        typeof BRIGHTON_TEAM !== "undefined" ? BRIGHTON_TEAM : null,
+        typeof LEEDS_TEAM !== "undefined" ? LEEDS_TEAM : null,
+        typeof REAL_SOCIEDAD_TEAM !== "undefined" ? REAL_SOCIEDAD_TEAM : null,
+        typeof NAPOLI_TEAM !== "undefined" ? NAPOLI_TEAM : null,
+        typeof JUVENTUS_TEAM !== "undefined" ? JUVENTUS_TEAM : null,
+        typeof LAZIO_TEAM !== "undefined" ? LAZIO_TEAM : null,
+        typeof ATALANTA_TEAM !== "undefined" ? ATALANTA_TEAM : null,
+        typeof COMO_TEAM !== "undefined" ? COMO_TEAM : null,
+        typeof BAYERN_TEAM !== "undefined" ? BAYERN_TEAM : null,
+        typeof BVB_TEAM !== "undefined" ? BVB_TEAM : null,
+        typeof LEVERKUSEN_TEAM !== "undefined" ? LEVERKUSEN_TEAM : null,
+        typeof FIORENTINA_TEAM !== "undefined" ? FIORENTINA_TEAM : null,
+        typeof UDINESE_TEAM !== "undefined" ? UDINESE_TEAM : null,
+        typeof TORINO_TEAM !== "undefined" ? TORINO_TEAM : null,
+        typeof CAGLIARI_TEAM !== "undefined" ? CAGLIARI_TEAM : null,
+        typeof BOLOGNA_TEAM !== "undefined" ? BOLOGNA_TEAM : null,
+        typeof CELTA_VIGO_TEAM !== "undefined" ? CELTA_VIGO_TEAM : null,
+        typeof VILLARREAL_TEAM !== "undefined" ? VILLARREAL_TEAM : null,
+        typeof GETAFE_TEAM !== "undefined" ? GETAFE_TEAM : null,
+        typeof RAYO_TEAM !== "undefined" ? RAYO_TEAM : null,
+        typeof OSASUNA_TEAM !== "undefined" ? OSASUNA_TEAM : null,
+        typeof EVERTON_TEAM !== "undefined" ? EVERTON_TEAM : null,
+        typeof BRENTFORD_TEAM !== "undefined" ? BRENTFORD_TEAM : null,
+        typeof HULL_TEAM !== "undefined" ? HULL_TEAM : null,
+        typeof FOREST_TEAM !== "undefined" ? FOREST_TEAM : null,
+        typeof PALACE_TEAM !== "undefined" ? PALACE_TEAM : null,
+        typeof FULHAM_TEAM !== "undefined" ? FULHAM_TEAM : null,
+        typeof BOURNEMOUTH_TEAM !== "undefined" ? BOURNEMOUTH_TEAM : null,
+        typeof PSG_TEAM !== "undefined" ? PSG_TEAM : null,
+        typeof MARSEILLE_TEAM !== "undefined" ? MARSEILLE_TEAM : null,
+        typeof LYON_TEAM !== "undefined" ? LYON_TEAM : null,
+        typeof LILLE_TEAM !== "undefined" ? LILLE_TEAM : null,
+        typeof MONACO_TEAM !== "undefined" ? MONACO_TEAM : null,
+        typeof LENS_TEAM !== "undefined" ? LENS_TEAM : null,
+        typeof RENNES_TEAM !== "undefined" ? RENNES_TEAM : null,
+        typeof STRASBOURG_TEAM !== "undefined" ? STRASBOURG_TEAM : null,
+        typeof BRAGA_TEAM !== "undefined" ? BRAGA_TEAM : null,
+      ].filter(Boolean);
+      sellerTeam = allEuroTeams.find(t => t.id === sellerTeamId) || null;
     }
     if (!sellerTeam) return;
 
@@ -1670,9 +2059,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // Dynamic event handlers attached during render
   }
 
-  function getPlayerMaxTotalGen(age) {
+  function getPlayerBaseMaxGen(age) {
     if (age < 25) return 3; // 25 yaş altı toplamda 3 gen
-    if (age < 30) return 2; // 29 yaş altı (25-29) toplamda 2 gen
+    if (age < 30) return 2; // 25-29 yaş toplamda 2 gen
     return 1;               // 30 yaş üstü toplamda 1 gen
   }
 
@@ -1681,33 +2070,72 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function getPlayerRemainingGen(player) {
-    const maxGen = getPlayerMaxTotalGen(player.age);
-    const gained = getPlayerGainedGen(player);
-    return Math.max(0, maxGen - gained);
+    if (!player) return 0;
+    const season = currentSeasonNumber || 1;
+    const seasonGains = player.seasonGains || {};
+    const baseMax = getPlayerBaseMaxGen(player.age);
+
+    if (season === 1) {
+      const gainedS1 = seasonGains[1] !== undefined ? seasonGains[1] : (player.totalGainedGen || 0);
+      return Math.max(0, baseMax - gainedS1);
+    } else if (season === 2) {
+      if (player.maxedInSeason1) {
+        // İlk sezonda haklarının tamamını kullandıysa 2. sezonda sadece 1 GEN gelişebilir
+        const gainedS2 = seasonGains[2] || 0;
+        return Math.max(0, 1 - gainedS2);
+      } else {
+        // İlk sezonda tamamını doldurmadıysa kalan normal hakkını kullanır
+        const gainedS1 = seasonGains[1] || 0;
+        const remainingBase = Math.max(0, baseMax - gainedS1);
+        const gainedS2 = seasonGains[2] || 0;
+        return Math.max(0, remainingBase - gainedS2);
+      }
+    } else {
+      // 3. ve sonraki sezonlarda: İlk sezonda hakkını doldurmuş oyuncu kesinlikle gelişemez
+      if (player.maxedInSeason1) {
+        return 0;
+      }
+      const totalGained = player.totalGainedGen || 0;
+      return Math.max(0, baseMax - totalGained);
+    }
   }
 
   function getPlayerAgeBadge(player) {
-    const maxGen = getPlayerMaxTotalGen(player.age);
-    const gained = getPlayerGainedGen(player);
+    const season = currentSeasonNumber || 1;
     const remaining = getPlayerRemainingGen(player);
+    const gained = getPlayerGainedGen(player);
+
+    if (season >= 3 && player.maxedInSeason1) {
+      return `<span class="badge-pill" style="font-size:10px; padding:1px 6px; color:#ef4444; border-color:#ef4444; font-weight:800;">🔒 Kariyer Gelişimi Tamamlandı (3. Sezon+)</span>`;
+    }
 
     if (remaining === 0) {
-      return `<span class="badge-pill" style="font-size:10px; padding:1px 6px; color:#ef4444; border-color:#ef4444; font-weight:800;">🔒 Maksimum Gelişim (${gained}/${maxGen} GEN)</span>`;
+      return `<span class="badge-pill" style="font-size:10px; padding:1px 6px; color:#ef4444; border-color:#ef4444; font-weight:800;">🔒 Bu Sezon Gelişim Doldu</span>`;
+    }
+
+    if (season === 2 && player.maxedInSeason1) {
+      return `<span class="badge-pill" style="font-size:10px; padding:1px 6px; color:var(--accent-gold); border-color:var(--accent-gold); font-weight:800;">🌟 2. Sezon Bonusu (+${remaining} GEN Hakkı)</span>`;
     }
 
     if (player.age < 25) {
-      return `<span class="badge-pill" style="font-size:10px; padding:1px 6px; color:var(--accent-gold); border-color:var(--accent-gold); font-weight:800;">🌟 &lt;25 Yaş (Toplam: ${gained}/${maxGen} GEN)</span>`;
+      return `<span class="badge-pill" style="font-size:10px; padding:1px 6px; color:var(--accent-gold); border-color:var(--accent-gold); font-weight:800;">🌟 &lt;25 Yaş (Kalan: +${remaining} GEN)</span>`;
     }
     if (player.age < 30) {
-      return `<span class="badge-pill" style="font-size:10px; padding:1px 6px; color:var(--accent-blue); border-color:var(--accent-blue); font-weight:800;">🔥 25-29 Yaş (Toplam: ${gained}/${maxGen} GEN)</span>`;
+      return `<span class="badge-pill" style="font-size:10px; padding:1px 6px; color:var(--accent-blue); border-color:var(--accent-blue); font-weight:800;">🔥 25-29 Yaş (Kalan: +${remaining} GEN)</span>`;
     }
-    return `<span class="badge-pill" style="font-size:10px; padding:1px 6px; color:var(--text-muted); border-color:var(--glass-border);">👔 30+ Yaş (Toplam: ${gained}/${maxGen} GEN)</span>`;
+    return `<span class="badge-pill" style="font-size:10px; padding:1px 6px; color:var(--text-muted); border-color:var(--glass-border);">👔 30+ Yaş (Kalan: +${remaining} GEN)</span>`;
   }
 
   function getSpeedupCost() {
     if (!userTeam) return 0.1;
     const cost = +(userTeam.budget * 0.01).toFixed(2);
     return Math.max(0.01, cost);
+  }
+
+  function isSeasonCompleted() {
+    if (!fixtures || fixtures.length === 0) return false;
+    const allMatches = fixtures.flat();
+    return allMatches.length > 0 && allMatches.every(m => m.played);
   }
 
   function getTrainingData() {
@@ -1731,6 +2159,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const container = document.getElementById("training-slots-container");
     if (!container) return;
 
+    const isCompleted = isSeasonCompleted();
     const training = getTrainingData();
     const speedCost = getSpeedupCost();
 
@@ -1741,7 +2170,25 @@ document.addEventListener("DOMContentLoaded", () => {
       { pos: "GK", title: "Kaleci & Refleks İdmanı", icon: "🧤", color: "var(--accent-purple)" }
     ];
 
-    container.innerHTML = slotsMeta.map(slot => {
+    let bannerHtml = "";
+    if (isCompleted) {
+      bannerHtml = `
+        <div class="glass-card" style="grid-column: 1 / -1; margin-bottom: 8px; padding: 18px 24px; border: 1px solid rgba(245, 158, 11, 0.4); background: rgba(245, 158, 11, 0.08); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 32px;">🏁</span>
+            <div>
+              <div style="font-weight: 800; font-size: 16px; color: var(--accent-gold);">Sezon Tamamlandı!</div>
+              <div style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">Mevcut sezon sona erdiği için yeni antrenman başlatılamaz. Yeni idmanlar için lütfen yeni sezona başlayın.</div>
+            </div>
+          </div>
+          <button class="btn btn-primary" id="training-new-season-banner-btn" style="padding: 10px 22px; font-size: 13.5px; font-weight: 800; background: linear-gradient(135deg, var(--accent-gold), #d97706); border-color: var(--accent-gold); color: #fff; box-shadow: 0 0 15px var(--accent-gold-glow);">
+            🔄 Yeni Sezona Başla
+          </button>
+        </div>
+      `;
+    }
+
+    const cardsHtml = slotsMeta.map(slot => {
       const activeSlot = training[slot.pos];
       let activePlayer = null;
       if (activeSlot && activeSlot.playerName) {
@@ -1802,14 +2249,30 @@ document.addEventListener("DOMContentLoaded", () => {
               <button class="btn btn-primary complete-train-btn" data-pos="${slot.pos}" style="flex-grow:1; font-size:12.5px;">
                 🎉 Gelişimi Al (+1 GEN)
               </button>
+            ` : (isCompleted ? `
+              <button class="btn btn-secondary" disabled style="flex-grow:1; font-size:12px; opacity:0.4; cursor:not-allowed;" title="Sezon tamamlandı">
+                🔒 Sezon Bitti
+              </button>
             ` : `
               <button class="btn btn-secondary boost-train-btn" data-pos="${slot.pos}" style="flex-grow:1; font-size:12px;">
                 ⚡ Hızlandır (+%35) • €${speedCost}M (%1 Bütçe)
               </button>
-            `}
+            `)}
             <button class="btn btn-secondary cancel-train-btn" data-pos="${slot.pos}" style="font-size:12px; border-color:var(--accent-red); color:var(--accent-red);" title="İdmanı İptal Et">
               ❌ İptal
             </button>
+          </div>
+        `;
+      } else if (isCompleted) {
+        contentHtml = `
+          <div style="padding:20px 14px; text-align:center; background:rgba(255,255,255,0.02); border-radius:var(--radius-sm); border:1px dashed var(--glass-border); margin-bottom:14px;">
+            <div style="font-size:26px; margin-bottom:6px;">🔒</div>
+            <div style="font-size:13.5px; font-weight:700; color:var(--text-main); margin-bottom:4px;">
+              İdman Sahası Kilitli
+            </div>
+            <div style="font-size:12px; color:var(--text-muted);">
+              Sezon bittiği için yeni oyuncu idmana alınamaz.
+            </div>
           </div>
         `;
       } else {
@@ -1822,19 +2285,32 @@ document.addEventListener("DOMContentLoaded", () => {
             ${eligiblePlayers.length > 0 ? `
               <select id="train-select-${slot.pos}" class="form-select" style="font-size:13px; margin-bottom:10px;">
                 ${eligiblePlayers.map(p => {
-                  const maxG = getPlayerMaxTotalGen(p.age);
-                  const gained = getPlayerGainedGen(p);
-                  const remaining = getPlayerRemainingGen(p);
-                  const icon = p.age < 25 ? '🌟' : (p.age < 30 ? '🔥' : '👔');
-                  if (remaining === 0) {
-                    return `<option value="${p.name}" disabled style="color:var(--text-muted);">${p.name} (⭐ ${p.rating} OVR, ${p.age} Yaş) • [Gelişim Tamamlandı: ${gained}/${maxG} GEN 🔒]</option>`;
-                  }
-                  return `
+          const remaining = getPlayerRemainingGen(p);
+          const season = currentSeasonNumber || 1;
+          let infoText = "";
+          if (remaining === 0) {
+            if (season >= 3 && p.maxedInSeason1) {
+              infoText = "[Kariyer Gelişimi Tamamlandı (3. Sezon+) 🔒]";
+            } else if (season === 2 && p.maxedInSeason1) {
+              infoText = "[2. Sezon Hakkı Tamamlandı 🔒]";
+            } else {
+              infoText = "[Bu Sezonki Gelişim Doldu 🔒]";
+            }
+            return `<option value="${p.name}" disabled style="color:var(--text-muted);">${p.name} (⭐ ${p.rating} OVR, ${p.age} Yaş) • ${infoText}</option>`;
+          }
+
+          if (season === 2 && p.maxedInSeason1) {
+            infoText = `[2. Sezon Bonusu: +${remaining} GEN] 🌟`;
+          } else {
+            infoText = `[Kalan: +${remaining} GEN]`;
+          }
+          const icon = p.age < 25 ? '🌟' : (p.age < 30 ? '🔥' : '👔');
+          return `
                     <option value="${p.name}">
-                      ${p.name} (⭐ ${p.rating} OVR, ${p.age} Yaş) • [Kalan: +${remaining} GEN (${gained}/${maxG})] ${icon}
+                      ${p.name} (⭐ ${p.rating} OVR, ${p.age} Yaş) • ${infoText} ${icon}
                     </option>
                   `;
-                }).join("")}
+        }).join("")}
               </select>
               <button class="btn btn-primary start-train-btn" data-pos="${slot.pos}" style="width:100%; font-size:13px;">
                 ➕ Oyuncuyu İdmana Al
@@ -1862,7 +2338,15 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
     }).join("");
 
+    container.innerHTML = bannerHtml + cardsHtml;
+
     // Attach event listeners
+    document.getElementById("training-new-season-banner-btn")?.addEventListener("click", () => {
+      if (confirm("Mevcut sezon sıfırlanıp 2026/2027 yeni sezon fikstürü oluşturulacaktır. Onaylıyor musunuz?")) {
+        restartNewSeason();
+      }
+    });
+
     container.querySelectorAll(".start-train-btn").forEach(btn => {
       btn.addEventListener("click", (e) => {
         const pos = e.currentTarget.dataset.pos;
@@ -1897,14 +2381,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function startTraining(pos, playerName) {
     if (!userTeam) return;
+
+    if (isSeasonCompleted()) {
+      alert("⚠️ Sezon tamamlandı! Yeni antrenman başlatabilmek için lütfen 'Yeni Sezona Başla' butonuna tıklayarak yeni sezonu başlatın.");
+      return;
+    }
+
     const training = getTrainingData();
     const player = userTeam.squad.find(p => p.name === playerName);
     if (!player) return;
 
     const remaining = getPlayerRemainingGen(player);
-    const maxGen = getPlayerMaxTotalGen(player.age);
     if (remaining <= 0) {
-      alert(`⚠️ ${player.name} (${player.age} Yaş) toplam maksimum gelişim sınırına (+${maxGen} GEN) ulaşmıştır ve daha fazla geliştirilemez.`);
+      const season = currentSeasonNumber || 1;
+      if (season >= 3 && player.maxedInSeason1) {
+        alert(`⚠️ ${player.name}, ilk 2 sezonda gelişimini tamamlamıştır ve 3. sezondan itibaren daha fazla geliştirilemez.`);
+      } else if (season === 2 && player.maxedInSeason1) {
+        alert(`⚠️ ${player.name}, 2. sezondaki +1 GEN gelişim hakkını tamamlamıştır.`);
+      } else {
+        alert(`⚠️ ${player.name} (${player.age} Yaş) bu sezonki gelişim hakkını doldurmuştur.`);
+      }
       return;
     }
 
@@ -1922,6 +2418,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function speedupTraining(pos) {
     if (!userTeam) return;
+
+    if (isSeasonCompleted()) {
+      showToast("⚠️ Sezon bitti! Sezon tamamlandığında antrenman hızlandırılamaz.");
+      return;
+    }
+
     const cost = getSpeedupCost();
 
     if (userTeam.budget < cost) {
@@ -1962,7 +2464,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const player = userTeam.squad.find(p => p.name === slot.playerName);
     if (player) {
-      const maxGen = getPlayerMaxTotalGen(player.age);
       const remaining = getPlayerRemainingGen(player);
 
       if (remaining > 0) {
@@ -1970,18 +2471,29 @@ document.addEventListener("DOMContentLoaded", () => {
         const oldRating = player.rating;
 
         player.rating += ratingBoost;
+        player.seasonGains = player.seasonGains || {};
+        player.seasonGains[currentSeasonNumber] = (player.seasonGains[currentSeasonNumber] || 0) + ratingBoost;
         player.totalGainedGen = (player.totalGainedGen || 0) + ratingBoost;
         player.morale = 100;
         player.stamina = 100;
+
+        // If in season 1, check if they now hit baseMax
+        if (currentSeasonNumber === 1) {
+          const baseMax = getPlayerBaseMaxGen(player.age);
+          if (player.seasonGains[1] >= baseMax) {
+            player.maxedInSeason1 = true;
+          }
+        }
 
         // Increase market value string proportionally
         const currentValFloat = parseValToFloat(player.val);
         const newValFloat = +(currentValFloat * (1 + (ratingBoost * 0.08))).toFixed(2);
         player.val = newValFloat >= 1.0 ? `€${newValFloat.toFixed(2)}M` : `€${Math.round(newValFloat * 1000)}K`;
 
-        showToast(`🎉 HARİKA GELİŞİM! ${player.name} antrenmanı bitirdi! Reyting: ⭐ ${oldRating} ➔ ${player.rating} (+${ratingBoost} GEN) • Toplam: ${player.totalGainedGen}/${maxGen} GEN!`);
+        const newRemaining = getPlayerRemainingGen(player);
+        showToast(`🎉 HARİKA GELİŞİM! ${player.name} antrenmanı bitirdi! Reyting: ⭐ ${oldRating} ➔ ${player.rating} (+${ratingBoost} GEN) • ${newRemaining === 0 ? 'Bu sezonki gelişim tamamlandı 🔒' : `Kalan: +${newRemaining} GEN`}`);
       } else {
-        showToast(`ℹ️ ${player.name} maksimum gelişim kapasitesine (+${maxGen} GEN) ulaştı.`);
+        showToast(`ℹ️ ${player.name} bu sezonki maksimum gelişim kapasitesine ulaştı.`);
       }
     }
 
@@ -2148,12 +2660,42 @@ document.addEventListener("DOMContentLoaded", () => {
             ${isUserChampion ? '👑 TEBRİKLER ŞAMPİYON MENAJER! Kupayı müzenize götürdünüz! 🎉' : `2025/2026 Süper Lig Şampiyonu!`}
           </div>
           <div style="display: flex; gap: 16px; font-size: 13px; color: var(--text-muted); font-weight: 600;">
-            <span>Toplam Puan: <strong style="color:#ffffff;">${championRow.points} Puan</strong></span>
+            <span>Toplam Puan: <strong style="color:#ffffff;">${championRow.pts} Puan</strong></span>
             •
             <span>Averaj: <strong style="color:var(--accent-green);">${championRow.gd > 0 ? '+' : ''}${championRow.gd}</strong></span>
             •
             <span>Galibiyet: <strong style="color:#ffffff;">${championRow.won}G ${championRow.drawn}B ${championRow.lost}M</strong></span>
           </div>
+        </div>
+
+        <!-- Season Standing Cash Prizes -->
+        <h3 style="font-size: 18px; font-weight: 800; text-align: left; margin: 24px 0 12px 0; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+          <span>💰 Sezon Sonu Sıralama Bütçe Bonusları</span>
+        </h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 8px;">
+          ${[
+        { rank: 1, bonus: "5.00M", badge: "🥇 1. (Şampiyon)", color: "var(--accent-gold)" },
+        { rank: 2, bonus: "3.50M", badge: "🥈 2. Sıra", color: "#94a3b8" },
+        { rank: 3, bonus: "2.92M", badge: "🥉 3. Sıra", color: "#f97316" },
+        { rank: 4, bonus: "2.10M", badge: "🏅 4. Sıra", color: "var(--accent-blue)" },
+        { rank: 5, bonus: "1.25M", badge: "🎖️ 5. Sıra", color: "var(--accent-green)" }
+      ].map(item => {
+        const teamRow = leagueTable[item.rank - 1];
+        const t = teamRow ? teamRow.team : null;
+        const isUserRow = userTeam && t && t.id === userTeam.id;
+        return `
+              <div class="glass-card" style="padding: 12px 8px; text-align: center; border: 1px solid ${isUserRow ? item.color : 'var(--glass-border)'}; ${isUserRow ? `box-shadow: 0 0 15px rgba(245,158,11,0.25); background: rgba(255,255,255,0.06);` : ''}">
+                <div style="font-size: 11px; font-weight: 800; color: ${item.color}; margin-bottom: 4px;">${item.badge}</div>
+                <div style="font-size: 16px; font-weight: 900; color: var(--accent-green); margin: 4px 0;">+€${item.bonus}</div>
+                <div style="font-size: 11.5px; color: var(--text-main); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  ${t ? `${t.name} ${isUserRow ? '⭐ (Siz)' : ''}` : '—'}
+                </div>
+              </div>
+            `;
+      }).join("")}
+        </div>
+        <div style="font-size: 12px; color: var(--text-muted); text-align: left; margin-bottom: 20px;">
+          ℹ️ <em>Ayrıca yeni sezona geçildiğinde tüm takımların bütçelerine, lig başlangıç bütçelerinin onda biri (1/10) eklenir.</em>
         </div>
 
         <!-- Season Individual Awards Grid -->
@@ -2302,7 +2844,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function restartNewSeason() {
-    // Reset player stats
+    const currentSeason = currentSeasonNumber || 1;
+    // Mark season 1 maxed players and reset match stats (preserve training progress)
     TEAMS_DATA.forEach(team => {
       team.squad.forEach(p => {
         p.goals = 0;
@@ -2311,24 +2854,67 @@ document.addEventListener("DOMContentLoaded", () => {
         p.motmCount = 0;
         p.totalRating = 0;
         p.matchesPlayed = 0;
-        p.totalGainedGen = 0;
+
+        if (currentSeason === 1) {
+          const baseMax = getPlayerBaseMaxGen(p.age);
+          const s1Gained = (p.seasonGains && p.seasonGains[1]) || (p.totalGainedGen || 0);
+          if (s1Gained >= baseMax) {
+            p.maxedInSeason1 = true;
+          }
+        }
       });
     });
+
+    currentSeasonNumber = currentSeason + 1;
+
+    // Reset active training slots for the new season
+    if (userTeam) {
+      userTeam.training = { FW: null, MF: null, DF: null, GK: null };
+    }
+
+    // Standings placement bonus (1st: 5M, 2nd: 3.5M, 3rd: 2.92M, 4th: 2.1M, 5th: 1.25M)
+    const rankBonuses = [
+      { rank: 1, bonus: 5.0, title: "Şampiyonluk Bonusu" },
+      { rank: 2, bonus: 3.5, title: "2.lik Bonusu" },
+      { rank: 3, bonus: 2.92, title: "3.lük Bonusu" },
+      { rank: 4, bonus: 2.1, title: "4.lük Bonusu" },
+      { rank: 5, bonus: 1.25, title: "5.lik Bonusu" }
+    ];
+
+    let userRankBonus = 0;
+    let userRankIndex = -1;
+
+    if (leagueTable && leagueTable.length > 0) {
+      rankBonuses.forEach(({ rank, bonus }) => {
+        const row = leagueTable[rank - 1];
+        if (row && row.team) {
+          row.team.budget = +((row.team.budget + bonus).toFixed(2));
+          if (userTeam && row.team.id === userTeam.id) {
+            userRankBonus = bonus;
+            userRankIndex = rank;
+          }
+        }
+      });
+    }
 
     // Add 1/10 (10%) of initial baseline transfer budget to all teams for the new season
     TEAMS_DATA.forEach(team => {
       const baseBudget = team.initialBudget !== undefined ? team.initialBudget : (team.budget || 30.0);
-      const bonus = +(baseBudget * 0.10).toFixed(1);
-      team.budget = +((team.budget + bonus).toFixed(1));
+      const bonus = +(baseBudget * 0.10).toFixed(2);
+      team.budget = +((team.budget + bonus).toFixed(2));
     });
 
     if (userTeam) {
       const userBase = userTeam.initialBudget !== undefined ? userTeam.initialBudget : (userTeam.budget || 30.0);
-      const userBonus = +(userBase * 0.10).toFixed(1);
+      const userBaseBonus = +(userBase * 0.10).toFixed(2);
       saveSquadToLocalStorage();
-      showToast(`🎉 2026/2027 YENİ SEZON BAŞLADI! Başlangıç bütçesinin onda biri (+€${userBonus}M) kasanıza eklendi. Güncel Kasa: €${userTeam.budget.toFixed(1)}M`);
+      if (userRankBonus > 0) {
+        showToast(`🎉 ${currentSeasonNumber}. SEZON BAŞLADI! Lig ${userRankIndex}.si olduğunuz için +€${userRankBonus.toFixed(2)}M başarı bonusu ve başlangıç bütçesi bonusu (+€${userBaseBonus.toFixed(2)}M) kasanıza eklendi! Güncel Bütçe: €${userTeam.budget.toFixed(2)}M`);
+      } else {
+        showToast(`🎉 ${currentSeasonNumber}. SEZON BAŞLADI! Başlangıç bütçesi bonusu (+€${userBaseBonus.toFixed(2)}M) kasanıza eklendi. Güncel Kasa: €${userTeam.budget.toFixed(2)}M`);
+      }
     } else {
-      showToast("🎉 2026/2027 YENİ SEZON BAŞLADI! Yeni fikstür oluşturuldu.");
+      showToast(`🎉 ${currentSeasonNumber}. SEZON BAŞLADI! Yeni fikstür oluşturuldu.`);
     }
 
     currentMatchday = 1;

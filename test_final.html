@@ -417,57 +417,46 @@
           </div>
 
           <!-- Search, Filter & Position Filters -->
-          <div
-            style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; position: relative; z-index: 1000;">
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; position: relative; z-index: 1000;">
             <input type="text" id="transfer-search-input" placeholder="🔍 Oyuncu Arama..."
               style="padding: 6px 12px; font-size: 13px; border-radius: var(--radius-sm); background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: var(--text-main); outline: none; width: 140px;" />
 
             <!-- Filter & Sort Dropdown -->
             <div style="position: relative; z-index: 10000;">
-              <button id="transfer-sort-toggle-btn" class="btn btn-secondary"
-                style="padding: 6px 12px; font-size: 13px; display: flex; align-items: center; gap: 6px; border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.06); cursor: pointer;">
+              <button id="transfer-sort-toggle-btn" class="btn btn-secondary" style="padding: 6px 12px; font-size: 13px; display: flex; align-items: center; gap: 6px; border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.06); cursor: pointer;">
                 <span>⚡ Filtrele</span>
-                <span id="transfer-sort-active-badge"
-                  style="font-size: 11px; color: var(--accent-gold); font-weight: 800;">(⭐ GEN ↓)</span>
+                <span id="transfer-sort-active-badge" style="font-size: 11px; color: var(--accent-gold); font-weight: 800;">(⭐ GEN ↓)</span>
                 <span style="font-size: 9px; opacity: 0.7;">▼</span>
               </button>
 
-              <div id="transfer-sort-menu"
-                style="display: none; position: absolute; top: calc(100% + 8px); left: 0; min-width: 240px; z-index: 999999; padding: 10px; box-shadow: 0 20px 50px rgba(0,0,0,0.95), 0 0 25px rgba(245, 158, 11, 0.25); border: 1px solid rgba(245, 158, 11, 0.45); border-radius: var(--radius-md); background: #0b1329;">
-                <div
-                  style="font-size: 10.5px; font-weight: 800; color: var(--accent-gold); text-transform: uppercase; padding: 4px 8px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 6px; letter-spacing: 0.5px;">
+              <div id="transfer-sort-menu" style="display: none; position: absolute; top: calc(100% + 8px); left: 0; min-width: 240px; z-index: 999999; padding: 10px; box-shadow: 0 20px 50px rgba(0,0,0,0.95), 0 0 25px rgba(245, 158, 11, 0.25); border: 1px solid rgba(245, 158, 11, 0.45); border-radius: var(--radius-md); background: #0b1329;">
+                <div style="font-size: 10.5px; font-weight: 800; color: var(--accent-gold); text-transform: uppercase; padding: 4px 8px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 6px; letter-spacing: 0.5px;">
                   Sıralama Kriteri
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 3px;">
-                  <button class="transfer-sort-option active" data-sort="rating_desc"
-                    style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; font-size: 12.5px; border-radius: 6px; background: transparent; border: none; color: var(--text-main); cursor: pointer; text-align: left; transition: var(--transition);">
+                  <button class="transfer-sort-option active" data-sort="rating_desc" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; font-size: 12.5px; border-radius: 6px; background: transparent; border: none; color: var(--text-main); cursor: pointer; text-align: left; transition: var(--transition);">
                     <span>⭐ GEN (Yüksekten Düşüğe)</span>
                     <span class="sort-check">✓</span>
                   </button>
-                  <button class="transfer-sort-option" data-sort="rating_asc"
-                    style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; font-size: 12.5px; border-radius: 6px; background: transparent; border: none; color: var(--text-main); cursor: pointer; text-align: left; transition: var(--transition);">
+                  <button class="transfer-sort-option" data-sort="rating_asc" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; font-size: 12.5px; border-radius: 6px; background: transparent; border: none; color: var(--text-main); cursor: pointer; text-align: left; transition: var(--transition);">
                     <span>⭐ GEN (Düşükten Yükseğe)</span>
                     <span class="sort-check" style="display:none;">✓</span>
                   </button>
                   <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 4px 0;"></div>
-                  <button class="transfer-sort-option" data-sort="age_asc"
-                    style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; font-size: 12.5px; border-radius: 6px; background: transparent; border: none; color: var(--text-main); cursor: pointer; text-align: left; transition: var(--transition);">
+                  <button class="transfer-sort-option" data-sort="age_asc" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; font-size: 12.5px; border-radius: 6px; background: transparent; border: none; color: var(--text-main); cursor: pointer; text-align: left; transition: var(--transition);">
                     <span>👶 Yaş (Gençten Yaşlıya)</span>
                     <span class="sort-check" style="display:none;">✓</span>
                   </button>
-                  <button class="transfer-sort-option" data-sort="age_desc"
-                    style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; font-size: 12.5px; border-radius: 6px; background: transparent; border: none; color: var(--text-main); cursor: pointer; text-align: left; transition: var(--transition);">
+                  <button class="transfer-sort-option" data-sort="age_desc" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; font-size: 12.5px; border-radius: 6px; background: transparent; border: none; color: var(--text-main); cursor: pointer; text-align: left; transition: var(--transition);">
                     <span>🧓 Yaş (Yaşlıdan Gence)</span>
                     <span class="sort-check" style="display:none;">✓</span>
                   </button>
                   <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 4px 0;"></div>
-                  <button class="transfer-sort-option" data-sort="val_desc"
-                    style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; font-size: 12.5px; border-radius: 6px; background: transparent; border: none; color: var(--text-main); cursor: pointer; text-align: left; transition: var(--transition);">
+                  <button class="transfer-sort-option" data-sort="val_desc" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; font-size: 12.5px; border-radius: 6px; background: transparent; border: none; color: var(--text-main); cursor: pointer; text-align: left; transition: var(--transition);">
                     <span>💰 Piyasa Değeri (Pahalı ➔ Ucuz)</span>
                     <span class="sort-check" style="display:none;">✓</span>
                   </button>
-                  <button class="transfer-sort-option" data-sort="val_asc"
-                    style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; font-size: 12.5px; border-radius: 6px; background: transparent; border: none; color: var(--text-main); cursor: pointer; text-align: left; transition: var(--transition);">
+                  <button class="transfer-sort-option" data-sort="val_asc" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; font-size: 12.5px; border-radius: 6px; background: transparent; border: none; color: var(--text-main); cursor: pointer; text-align: left; transition: var(--transition);">
                     <span>🏷️ Piyasa Değeri (Ucuz ➔ Pahalı)</span>
                     <span class="sort-check" style="display:none;">✓</span>
                   </button>
@@ -477,18 +466,14 @@
 
             <!-- Country Filter Dropdown -->
             <div style="position: relative; z-index: 10000;">
-              <button id="transfer-nat-toggle-btn" class="btn btn-secondary"
-                style="padding: 6px 12px; font-size: 13px; display: flex; align-items: center; gap: 6px; border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.06); cursor: pointer;">
+              <button id="transfer-nat-toggle-btn" class="btn btn-secondary" style="padding: 6px 12px; font-size: 13px; display: flex; align-items: center; gap: 6px; border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.06); cursor: pointer;">
                 <span>🌍 Ülke Seç</span>
-                <span id="transfer-nat-active-badge"
-                  style="font-size: 11px; color: #60a5fa; font-weight: 800;">(Tümü)</span>
+                <span id="transfer-nat-active-badge" style="font-size: 11px; color: #60a5fa; font-weight: 800;">(Tümü)</span>
                 <span style="font-size: 9px; opacity: 0.7;">▼</span>
               </button>
 
-              <div id="transfer-nat-menu"
-                style="display: none; position: absolute; top: calc(100% + 8px); left: 0; min-width: 230px; max-height: 320px; overflow-y: auto; z-index: 999999; padding: 10px; box-shadow: 0 20px 50px rgba(0,0,0,0.95), 0 0 25px rgba(59, 130, 246, 0.25); border: 1px solid rgba(59, 130, 246, 0.45); border-radius: var(--radius-md); background: #0b1329;">
-                <div
-                  style="font-size: 10.5px; font-weight: 800; color: #60a5fa; text-transform: uppercase; padding: 4px 8px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 6px; letter-spacing: 0.5px;">
+              <div id="transfer-nat-menu" style="display: none; position: absolute; top: calc(100% + 8px); left: 0; min-width: 230px; max-height: 320px; overflow-y: auto; z-index: 999999; padding: 10px; box-shadow: 0 20px 50px rgba(0,0,0,0.95), 0 0 25px rgba(59, 130, 246, 0.25); border: 1px solid rgba(59, 130, 246, 0.45); border-radius: var(--radius-md); background: #0b1329;">
+                <div style="font-size: 10.5px; font-weight: 800; color: #60a5fa; text-transform: uppercase; padding: 4px 8px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 6px; letter-spacing: 0.5px;">
                   Ülkeye Göre Filtrele (A-Z)
                 </div>
                 <div id="transfer-nat-options-container" style="display: flex; flex-direction: column; gap: 3px;">
@@ -527,9 +512,7 @@
               ⚡ <strong>Gelişim Kuralları:</strong> 1. Sezonda 25 yaş altı <span
                 style="color:var(--accent-gold); font-weight:700;">+3 GEN</span> • 25-29 yaş <span
                 style="color:var(--accent-blue); font-weight:700;">+2 GEN</span> • 30+ yaş <span
-                style="color:var(--text-main); font-weight:700;">+1 GEN</span>. 1. sezonda haklarını dolduran oyuncular
-              <strong>2. sezonda sadece +1 GEN</strong> gelişebilir, <strong>3. ve sonraki sezonlarda ise
-                gelişemez</strong>. İdman hızlandırma kulüp bütçesinin <strong>%1'ine</strong> mal olur.
+                style="color:var(--text-main); font-weight:700;">+1 GEN</span>. 1. sezonda haklarını dolduran oyuncular <strong>2. sezonda sadece +1 GEN</strong> gelişebilir, <strong>3. ve sonraki sezonlarda ise gelişemez</strong>. İdman hızlandırma kulüp bütçesinin <strong>%1'ine</strong> mal olur.
             </p>
           </div>
           <div style="display:flex; align-items:center; gap:10px;">
@@ -589,6 +572,15 @@
   <script src="js/ai.js"></script>
   <script src="js/app.js"></script>
 
+
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        const btn = document.querySelector('.select-team-btn');
+        if (btn) btn.click();
+    }, 50);
+});
+</script>
 </body>
 
 </html>

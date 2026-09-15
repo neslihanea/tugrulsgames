@@ -1625,6 +1625,61 @@ body {
   box-shadow: 0 0 12px var(--team-primary-glow);
 }
 
+.transfer-sort-option:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+}
+
+.transfer-sort-option.active {
+  background: rgba(245, 158, 11, 0.16) !important;
+  color: var(--accent-gold) !important;
+  font-weight: 800 !important;
+}
+
+.transfer-nat-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  font-size: 12.5px;
+  border-radius: 6px;
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  cursor: pointer;
+  text-align: left;
+  transition: var(--transition);
+}
+
+.transfer-nat-option:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+}
+
+.transfer-nat-option.active {
+  background: rgba(59, 130, 246, 0.18) !important;
+  color: #60a5fa !important;
+  font-weight: 800 !important;
+}
+
+#transfer-nat-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+#transfer-nat-menu::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+}
+
+#transfer-nat-menu::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.5);
+  border-radius: 4px;
+}
+
+#transfer-nat-menu::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.8);
+}
+
 /* Training & Player Development Styling */
 .training-slot-card {
   background: rgba(15, 23, 42, 0.7);
