@@ -434,10 +434,12 @@
 
               <div id="transfer-sort-menu"
                 style="display: none; position: absolute; top: calc(100% + 8px); left: 0; min-width: 320px; max-width: 360px; max-height: 520px; overflow-y: auto; z-index: 999999; padding: 14px; box-shadow: 0 20px 50px rgba(0,0,0,0.95), 0 0 25px rgba(245, 158, 11, 0.25); border: 1px solid rgba(245, 158, 11, 0.45); border-radius: var(--radius-md); background: #0b1329;">
-                
+
                 <!-- Header with Reset -->
-                <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.12); margin-bottom: 10px;">
-                  <div style="font-size: 11px; font-weight: 800; color: var(--accent-gold); text-transform: uppercase; letter-spacing: 0.5px;">
+                <div
+                  style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.12); margin-bottom: 10px;">
+                  <div
+                    style="font-size: 11px; font-weight: 800; color: var(--accent-gold); text-transform: uppercase; letter-spacing: 0.5px;">
                     ⚡ Çoklu Filtreleme & Sıralama
                   </div>
                   <button id="transfer-filter-reset-btn" type="button"
@@ -448,7 +450,8 @@
 
                 <!-- 1. Mevki (Pozisyon) Çoklu Seçim -->
                 <div style="margin-bottom: 12px;">
-                  <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">
+                  <div
+                    style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">
                     ⚽ Mevki (Çoklu Seçilebilir)
                   </div>
                   <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;">
@@ -461,27 +464,33 @@
 
                 <!-- 2. GEN / Reyting Çoklu Seçim -->
                 <div style="margin-bottom: 12px;">
-                  <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">
+                  <div
+                    style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">
                     ⭐ Reyting / GEN Aralığı
                   </div>
                   <div style="display: flex; flex-direction: column; gap: 3px;">
-                    <button type="button" class="transfer-filter-check-option" data-filter-type="rating" data-filter-val="85+">
+                    <button type="button" class="transfer-filter-check-option" data-filter-type="rating"
+                      data-filter-val="85+">
                       <span>🌟 85+ (Süperstar)</span>
                       <span class="filter-check-mark">✓</span>
                     </button>
-                    <button type="button" class="transfer-filter-check-option" data-filter-type="rating" data-filter-val="80-84">
+                    <button type="button" class="transfer-filter-check-option" data-filter-type="rating"
+                      data-filter-val="80-84">
                       <span>⭐ 80 - 84 (Elit)</span>
                       <span class="filter-check-mark">✓</span>
                     </button>
-                    <button type="button" class="transfer-filter-check-option" data-filter-type="rating" data-filter-val="75-79">
+                    <button type="button" class="transfer-filter-check-option" data-filter-type="rating"
+                      data-filter-val="75-79">
                       <span>🔷 75 - 79 (Kaliteli)</span>
                       <span class="filter-check-mark">✓</span>
                     </button>
-                    <button type="button" class="transfer-filter-check-option" data-filter-type="rating" data-filter-val="70-74">
+                    <button type="button" class="transfer-filter-check-option" data-filter-type="rating"
+                      data-filter-val="70-74">
                       <span>⚪ 70 - 74 (Standart)</span>
                       <span class="filter-check-mark">✓</span>
                     </button>
-                    <button type="button" class="transfer-filter-check-option" data-filter-type="rating" data-filter-val="<70">
+                    <button type="button" class="transfer-filter-check-option" data-filter-type="rating"
+                      data-filter-val="<70">
                       <span>📉 69 ve altı (Gelişen)</span>
                       <span class="filter-check-mark">✓</span>
                     </button>
@@ -490,19 +499,23 @@
 
                 <!-- 3. Yaş Aralığı Çoklu Seçim -->
                 <div style="margin-bottom: 12px;">
-                  <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">
+                  <div
+                    style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">
                     👶 Yaş Aralığı
                   </div>
                   <div style="display: flex; flex-direction: column; gap: 3px;">
-                    <button type="button" class="transfer-filter-check-option" data-filter-type="age" data-filter-val="young">
+                    <button type="button" class="transfer-filter-check-option" data-filter-type="age"
+                      data-filter-val="young">
                       <span>👶 Genç Yetenek (≤ 22 Yaş)</span>
                       <span class="filter-check-mark">✓</span>
                     </button>
-                    <button type="button" class="transfer-filter-check-option" data-filter-type="age" data-filter-val="prime">
+                    <button type="button" class="transfer-filter-check-option" data-filter-type="age"
+                      data-filter-val="prime">
                       <span>⚡ Zirve / Prime (23 - 28 Yaş)</span>
                       <span class="filter-check-mark">✓</span>
                     </button>
-                    <button type="button" class="transfer-filter-check-option" data-filter-type="age" data-filter-val="veteran">
+                    <button type="button" class="transfer-filter-check-option" data-filter-type="age"
+                      data-filter-val="veteran">
                       <span>🧓 Tecrübeli (29+ Yaş)</span>
                       <span class="filter-check-mark">✓</span>
                     </button>
@@ -511,19 +524,23 @@
 
                 <!-- 4. Piyasa Değeri Aralığı Çoklu Seçim -->
                 <div style="margin-bottom: 12px;">
-                  <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">
+                  <div
+                    style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">
                     💰 Piyasa Değeri Aralığı
                   </div>
                   <div style="display: flex; flex-direction: column; gap: 3px;">
-                    <button type="button" class="transfer-filter-check-option" data-filter-type="value" data-filter-val="under10">
+                    <button type="button" class="transfer-filter-check-option" data-filter-type="value"
+                      data-filter-val="under10">
                       <span>🏷️ Ekonomik (&lt; €10M)</span>
                       <span class="filter-check-mark">✓</span>
                     </button>
-                    <button type="button" class="transfer-filter-check-option" data-filter-type="value" data-filter-val="mid">
+                    <button type="button" class="transfer-filter-check-option" data-filter-type="value"
+                      data-filter-val="mid">
                       <span>💼 Orta Segment (€10M - €30M)</span>
                       <span class="filter-check-mark">✓</span>
                     </button>
-                    <button type="button" class="transfer-filter-check-option" data-filter-type="value" data-filter-val="star">
+                    <button type="button" class="transfer-filter-check-option" data-filter-type="value"
+                      data-filter-val="star">
                       <span>💎 Yıldız Değer (&gt; €30M)</span>
                       <span class="filter-check-mark">✓</span>
                     </button>
@@ -532,11 +549,13 @@
 
                 <!-- 5. Sıralama Ölçütü -->
                 <div style="margin-bottom: 12px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px;">
-                  <div style="font-size: 10.5px; font-weight: 700; color: var(--accent-gold); margin-bottom: 6px; text-transform: uppercase;">
+                  <div
+                    style="font-size: 10.5px; font-weight: 700; color: var(--accent-gold); margin-bottom: 6px; text-transform: uppercase;">
                     🔄 Sıralama Ölçütü
                   </div>
                   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
-                    <button type="button" class="transfer-sort-pill active" data-sort="rating_desc">⭐ GEN (Azalan)</button>
+                    <button type="button" class="transfer-sort-pill active" data-sort="rating_desc">⭐ GEN
+                      (Azalan)</button>
                     <button type="button" class="transfer-sort-pill" data-sort="rating_asc">⭐ GEN (Artan)</button>
                     <button type="button" class="transfer-sort-pill" data-sort="age_asc">👶 Yaş (Genç ➔ Yaşlı)</button>
                     <button type="button" class="transfer-sort-pill" data-sort="age_desc">🧓 Yaş (Yaşlı ➔ Genç)</button>

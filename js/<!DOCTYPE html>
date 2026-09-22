@@ -13,46 +13,46 @@
     </script>
     <script src="https://cdn.privacy-mgmt.com/wrapperMessagingWithoutDetection.js" async></script>
     <script type="text/javascript" data-description="contentpass integration">
-    (function () {
-        var cpBaseUrl = 'https://cp.transfermarkt.com';
-        var cpController = cpBaseUrl + '/now.js';
-        var cpPropertyId = '7a84b340';
+            (function () {
+                var cpBaseUrl = 'https://cp.transfermarkt.com';
+                var cpController = cpBaseUrl + '/now.js';
+                var cpPropertyId = '7a84b340';
 
-        !function (C, o, n, t, P, a, s) {
-            C['CPObject'] = n; C[n] || (C[n] = function () {
-                (C[n].q = C[n].q || []).push(arguments)
-            }); C[n].l = +new Date; a = o.createElement(t);
-            s = o.getElementsByTagName(t)[0]; a.src = P; s.parentNode.insertBefore(a, s)
-        }
-            (window, document, 'cp', 'script', cpController);
-
-        !function (C, o, n, t, P) {
-            if (!C[n].patched) {
-                cp('extension', 'authenticate'); P = C[n].q.push;
-                C[n].q.push = function (a) {
-                    if (a[0] === 'authenticate') {
-                        if ((o['cookie'] || '').indexOf('_cpauthhint=') === -1 &&
-                            !(C['localStorage'] || {})['_cpuser'] && C.location.href.toLowerCase().indexOf('cpauthenticated') === -1) {
-                            t = { isLoggedIn: function () { return false; }, hasValidSubscription: function () { return false; } };
-                            (typeof a[1] === 'function' && a[1](null, t)); C[n].afp = true; P.apply(C[n].q, [['authenticate', null]]);
-                            return t;
-                        }
-                    } P.apply(C[n].q, [a]);
+                !function (C, o, n, t, P, a, s) {
+                    C['CPObject'] = n; C[n] || (C[n] = function () {
+                        (C[n].q = C[n].q || []).push(arguments)
+                    }); C[n].l = +new Date; a = o.createElement(t);
+                    s = o.getElementsByTagName(t)[0]; a.src = P; s.parentNode.insertBefore(a, s)
                 }
-            }
-        }
-            (window, document, 'cp', false);
+                    (window, document, 'cp', 'script', cpController);
 
-        cp('create', cpPropertyId, {
-            baseUrl: cpBaseUrl
-        });
+                !function (C, o, n, t, P) {
+                    if (!C[n].patched) {
+                        cp('extension', 'authenticate'); P = C[n].q.push;
+                        C[n].q.push = function (a) {
+                            if (a[0] === 'authenticate') {
+                                if ((o['cookie'] || '').indexOf('_cpauthhint=') === -1 &&
+                                    !(C['localStorage'] || {})['_cpuser'] && C.location.href.toLowerCase().indexOf('cpauthenticated') === -1) {
+                                    t = { isLoggedIn: function () { return false; }, hasValidSubscription: function () { return false; } };
+                                    (typeof a[1] === 'function' && a[1](null, t)); C[n].afp = true; P.apply(C[n].q, [['authenticate', null]]);
+                                    return t;
+                                }
+                            } P.apply(C[n].q, [a]);
+                        }
+                    }
+                }
+                    (window, document, 'cp', false);
 
-        cp('render', {
-            onFullConsent: function () {
-                console.log('[DEMO] onFullConsent');
-            }
-        })
-    })()
+                cp('create', cpPropertyId, {
+                    baseUrl: cpBaseUrl
+                });
+
+                cp('render', {
+                    onFullConsent: function () {
+                        console.log('[DEMO] onFullConsent');
+                    }
+                })
+            })()
     </script>
 
     <script type="text/javascript" data-description="contentpass sourcepoint fast path">
