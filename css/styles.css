@@ -1636,6 +1636,112 @@ body {
   font-weight: 800 !important;
 }
 
+/* Transfer Multi-Filter & Sort Styles */
+.transfer-filter-check-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 10px;
+  font-size: 12px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--text-main);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.transfer-filter-check-option:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.transfer-filter-check-option .filter-check-mark {
+  display: none;
+  font-weight: 800;
+  color: var(--accent-gold);
+}
+
+.transfer-filter-check-option.active {
+  background: rgba(245, 158, 11, 0.16) !important;
+  border-color: rgba(245, 158, 11, 0.5) !important;
+  color: var(--accent-gold) !important;
+  font-weight: 700;
+}
+
+.transfer-filter-check-option.active .filter-check-mark {
+  display: inline;
+}
+
+.transfer-filter-chip {
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.transfer-filter-chip:hover {
+  background: rgba(255, 255, 255, 0.09);
+  color: var(--text-main);
+}
+
+.transfer-filter-chip.active {
+  background: rgba(59, 130, 246, 0.22) !important;
+  border-color: rgba(59, 130, 246, 0.6) !important;
+  color: #60a5fa !important;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.25);
+}
+
+.transfer-sort-pill {
+  padding: 6px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.transfer-sort-pill:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-main);
+}
+
+.transfer-sort-pill.active {
+  background: rgba(245, 158, 11, 0.18) !important;
+  border-color: rgba(245, 158, 11, 0.5) !important;
+  color: var(--accent-gold) !important;
+  font-weight: 800;
+}
+
+#transfer-sort-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+#transfer-sort-menu::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+}
+
+#transfer-sort-menu::-webkit-scrollbar-thumb {
+  background: rgba(245, 158, 11, 0.4);
+  border-radius: 4px;
+}
+
+#transfer-sort-menu::-webkit-scrollbar-thumb:hover {
+  background: rgba(245, 158, 11, 0.7);
+}
+
 .transfer-nat-option {
   display: flex;
   align-items: center;

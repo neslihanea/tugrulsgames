@@ -21,6 +21,12 @@ document.addEventListener("DOMContentLoaded", () => {
   let transferNatFilter = "ALL";
   let transferSearchQuery = "";
   let transferSortBy = "rating_desc"; // 'rating_desc', 'rating_asc', 'age_asc', 'age_desc', 'val_desc', 'val_asc'
+  const transferMultiFilters = {
+    ratings: new Set(),
+    ages: new Set(),
+    values: new Set(),
+    positions: new Set()
+  };
 
   const SORT_BADGES = {
     rating_desc: "(⭐ GEN ↓)",
@@ -114,12 +120,48 @@ document.addEventListener("DOMContentLoaded", () => {
     '🏴󠁧󠁢󠁥󠁮󠁧󠁿': 'İngiltere',
     '🏴󠁧󠁢󠁳󠁣󠁴󠁿': 'İskoçya',
     '🏴󠁧󠁢󠁷󠁬󠁳󠁿': 'Galler',
+    '🇦🇲': 'Ermenistan',
+    '🇦🇺': 'Avustralya',
+    '🇨🇬': 'Kongo',
+    '🇬🇪': 'Gürcistan',
+    '🇸🇦': 'Suudi Arabistan',
+    '🇸🇱': 'Sierra Leone',
+    '🇹🇳': 'Tunus',
     '🏳️': 'Diğer'
   };
 
   initApp();
 
   function initApp() {
+    // Normalize any text nationalities to flag emojis
+    const NAT_NORMALIZE = {
+      'italy': '🇮🇹',
+      'italia': '🇮🇹',
+      'spain': '🇪🇸',
+      'japan': '🇯🇵',
+      'ghana': '🇬🇭',
+      'mali': '🇲🇱',
+      'chile': '🇨🇱',
+      'egypt': '🇪🇬',
+      'gabon': '🇬🇦',
+      'wales': '🏴󠁧󠁢󠁷󠁬󠁳󠁿',
+      'congo': '🇨🇬'
+    };
+    if (typeof TEAMS_DATA !== "undefined") {
+      TEAMS_DATA.forEach(t => {
+        if (t.squad) {
+          t.squad.forEach(p => {
+            if (p.nat) {
+              const k = p.nat.trim().toLowerCase();
+              if (NAT_NORMALIZE[k]) {
+                p.nat = NAT_NORMALIZE[k];
+              }
+            }
+          });
+        }
+      });
+    }
+
     // Store initial baseline transfer budget for each team
     TEAMS_DATA.forEach(t => {
       if (t.initialBudget === undefined) {
@@ -1467,6 +1509,98 @@ document.addEventListener("DOMContentLoaded", () => {
     return parseFloat(str) || 1.0;
   }
 
+  function matchesMultiFilter(player) {
+    if (!player) return false;
+
+    // 1. Position multi-filter
+    if (transferMultiFilters.positions.size > 0) {
+      if (!transferMultiFilters.positions.has(player.pos)) {
+        return false;
+      }
+    } else if (transferPosFilter !== "ALL") {
+      if (player.pos !== transferPosFilter) {
+        return false;
+      }
+    }
+
+    // 2. Rating range multi-filter
+    if (transferMultiFilters.ratings.size > 0) {
+      const r = Number(player.rating) || 0;
+      let matchRating = false;
+      if (transferMultiFilters.ratings.has("85+") && r >= 85) matchRating = true;
+      if (transferMultiFilters.ratings.has("80-84") && r >= 80 && r <= 84) matchRating = true;
+      if (transferMultiFilters.ratings.has("75-79") && r >= 75 && r <= 79) matchRating = true;
+      if (transferMultiFilters.ratings.has("70-74") && r >= 70 && r <= 74) matchRating = true;
+      if (transferMultiFilters.ratings.has("<70") && r < 70) matchRating = true;
+      if (!matchRating) return false;
+    }
+
+    // 3. Age range multi-filter
+    if (transferMultiFilters.ages.size > 0) {
+      const a = Number(player.age) || 0;
+      let matchAge = false;
+      if (transferMultiFilters.ages.has("young") && a <= 22) matchAge = true;
+      if (transferMultiFilters.ages.has("prime") && a >= 23 && a <= 28) matchAge = true;
+      if (transferMultiFilters.ages.has("veteran") && a >= 29) matchAge = true;
+      if (!matchAge) return false;
+    }
+
+    // 4. Value range multi-filter
+    if (transferMultiFilters.values.size > 0) {
+      const v = parseValToFloat(player.val);
+      let matchVal = false;
+      if (transferMultiFilters.values.has("under10") && v < 10) matchVal = true;
+      if (transferMultiFilters.values.has("mid") && v >= 10 && v <= 30) matchVal = true;
+      if (transferMultiFilters.values.has("star") && v > 30) matchVal = true;
+      if (!matchVal) return false;
+    }
+
+    return true;
+  }
+
+  function updateFilterBadge() {
+    const badgeElem = document.getElementById("transfer-sort-active-badge");
+    if (!badgeElem) return;
+
+    let filterCount = 0;
+    filterCount += transferMultiFilters.positions.size;
+    filterCount += transferMultiFilters.ratings.size;
+    filterCount += transferMultiFilters.ages.size;
+    filterCount += transferMultiFilters.values.size;
+
+    const sortText = SORT_BADGES[transferSortBy] || "";
+
+    if (filterCount > 0) {
+      badgeElem.innerHTML = `${sortText} <span style="background:var(--accent-gold); color:#000; font-size:9.5px; padding:1px 5px; border-radius:10px; margin-left:2px; font-weight:900;">${filterCount}</span>`;
+    } else {
+      badgeElem.innerText = sortText;
+    }
+  }
+
+  function syncPosButtons() {
+    const posBtns = document.querySelectorAll(".transfer-pos-filter");
+    const posChips = document.querySelectorAll(".transfer-chip-pos");
+
+    const hasAnyPos = transferMultiFilters.positions.size > 0;
+
+    posBtns.forEach(btn => {
+      const pos = btn.dataset.pos;
+      if (pos === "ALL") {
+        if (!hasAnyPos) btn.classList.add("active");
+        else btn.classList.remove("active");
+      } else {
+        if (transferMultiFilters.positions.has(pos)) btn.classList.add("active");
+        else btn.classList.remove("active");
+      }
+    });
+
+    posChips.forEach(chip => {
+      const pos = chip.dataset.pos;
+      if (transferMultiFilters.positions.has(pos)) chip.classList.add("active");
+      else chip.classList.remove("active");
+    });
+  }
+
   function sortTransferPlayers(list, getPlayerFn) {
     list.sort((a, b) => {
       const pA = getPlayerFn ? getPlayerFn(a) : a;
@@ -1511,13 +1645,24 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
-    // Pos filter
+    // Pos filter in top bar (supports multi-selection toggle or ALL)
     const posBtns = document.querySelectorAll(".transfer-pos-filter");
     posBtns.forEach(btn => {
       btn.addEventListener("click", (e) => {
-        posBtns.forEach(b => b.classList.remove("active"));
-        e.currentTarget.classList.add("active");
-        transferPosFilter = e.currentTarget.dataset.pos;
+        const pos = btn.dataset.pos;
+        if (pos === "ALL") {
+          transferMultiFilters.positions.clear();
+          transferPosFilter = "ALL";
+        } else {
+          if (transferMultiFilters.positions.has(pos)) {
+            transferMultiFilters.positions.delete(pos);
+          } else {
+            transferMultiFilters.positions.add(pos);
+          }
+          transferPosFilter = "ALL";
+        }
+        syncPosButtons();
+        updateFilterBadge();
         renderTransferMarket();
       });
     });
@@ -1545,32 +1690,112 @@ document.addEventListener("DOMContentLoaded", () => {
         sortMenu.style.display = isOpen ? "none" : "block";
       });
 
-      const sortOptions = sortMenu.querySelectorAll(".transfer-sort-option");
-      sortOptions.forEach(opt => {
-        opt.addEventListener("click", (e) => {
+      // Position chips inside filter dropdown
+      const posChips = sortMenu.querySelectorAll(".transfer-chip-pos");
+      posChips.forEach(chip => {
+        chip.addEventListener("click", (e) => {
           e.stopPropagation();
-          transferSortBy = e.currentTarget.dataset.sort;
-
-          sortOptions.forEach(o => {
-            o.classList.remove("active");
-            const check = o.querySelector(".sort-check");
-            if (check) check.style.display = "none";
-          });
-
-          e.currentTarget.classList.add("active");
-          const activeCheck = e.currentTarget.querySelector(".sort-check");
-          if (activeCheck) activeCheck.style.display = "inline";
-
-          const badgeElem = document.getElementById("transfer-sort-active-badge");
-          if (badgeElem && SORT_BADGES[transferSortBy]) {
-            badgeElem.innerText = SORT_BADGES[transferSortBy];
+          const pos = chip.dataset.pos;
+          if (transferMultiFilters.positions.has(pos)) {
+            transferMultiFilters.positions.delete(pos);
+          } else {
+            transferMultiFilters.positions.add(pos);
           }
-
-          sortMenu.style.display = "none";
+          syncPosButtons();
+          updateFilterBadge();
           renderTransferMarket();
         });
       });
+
+      // Checkbox options for Rating, Age, Value
+      const checkOptions = sortMenu.querySelectorAll(".transfer-filter-check-option");
+      checkOptions.forEach(opt => {
+        opt.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const type = opt.dataset.filterType;
+          const val = opt.dataset.filterVal;
+          let setRef = null;
+          if (type === "rating") setRef = transferMultiFilters.ratings;
+          else if (type === "age") setRef = transferMultiFilters.ages;
+          else if (type === "value") setRef = transferMultiFilters.values;
+
+          if (setRef) {
+            if (setRef.has(val)) {
+              setRef.delete(val);
+              opt.classList.remove("active");
+            } else {
+              setRef.add(val);
+              opt.classList.add("active");
+            }
+            updateFilterBadge();
+            renderTransferMarket();
+          }
+        });
+      });
+
+      // Sort pills inside filter dropdown
+      const sortPills = sortMenu.querySelectorAll(".transfer-sort-pill");
+      sortPills.forEach(pill => {
+        pill.addEventListener("click", (e) => {
+          e.stopPropagation();
+          transferSortBy = pill.dataset.sort;
+          sortPills.forEach(p => p.classList.remove("active"));
+          pill.classList.add("active");
+          updateFilterBadge();
+          renderTransferMarket();
+        });
+      });
+
+      // Reset button
+      const resetBtn = document.getElementById("transfer-filter-reset-btn");
+      if (resetBtn) {
+        resetBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          transferMultiFilters.ratings.clear();
+          transferMultiFilters.ages.clear();
+          transferMultiFilters.values.clear();
+          transferMultiFilters.positions.clear();
+          transferPosFilter = "ALL";
+          transferSortBy = "rating_desc";
+
+          sortMenu.querySelectorAll(".transfer-filter-check-option").forEach(o => o.classList.remove("active"));
+          sortMenu.querySelectorAll(".transfer-chip-pos").forEach(o => o.classList.remove("active"));
+          sortMenu.querySelectorAll(".transfer-sort-pill").forEach(p => {
+            if (p.dataset.sort === "rating_desc") p.classList.add("active");
+            else p.classList.remove("active");
+          });
+
+          syncPosButtons();
+          updateFilterBadge();
+          renderTransferMarket();
+        });
+      }
+
+      // Apply & Close button
+      const applyBtn = document.getElementById("transfer-filter-apply-btn");
+      if (applyBtn) {
+        applyBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          sortMenu.style.display = "none";
+          renderTransferMarket();
+        });
+      }
+
+      // Keep clicks inside menu from closing it
+      sortMenu.addEventListener("click", (e) => {
+        e.stopPropagation();
+      });
     }
+
+    // Close dropdowns on outside click
+    document.addEventListener("click", (e) => {
+      if (sortMenu && sortMenu.style.display === "block" && !sortMenu.contains(e.target) && e.target !== sortToggleBtn && !sortToggleBtn.contains(e.target)) {
+        sortMenu.style.display = "none";
+      }
+      if (natMenu && natMenu.style.display === "block" && !natMenu.contains(e.target) && e.target !== natToggleBtn && !natToggleBtn.contains(e.target)) {
+        natMenu.style.display = "none";
+      }
+    });
 
     // Country dropdown initialization and event handlers
     const natContainer = document.getElementById("transfer-nat-options-container");
@@ -1582,10 +1807,12 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       Object.keys(FLAG_TO_COUNTRY_NAME).forEach(f => flagsSet.add(f));
 
-      const countriesList = Array.from(flagsSet).map(flag => ({
-        flag: flag,
-        name: FLAG_TO_COUNTRY_NAME[flag] || flag
-      }));
+      const countriesList = Array.from(flagsSet)
+        .filter(flag => FLAG_TO_COUNTRY_NAME[flag] !== undefined)
+        .map(flag => ({
+          flag: flag,
+          name: FLAG_TO_COUNTRY_NAME[flag]
+        }));
 
       // Alphabetically sort by Turkish country name (A to Z)
       countriesList.sort((a, b) => a.name.localeCompare(b.name, "tr", { sensitivity: "base" }));
@@ -1752,6 +1979,46 @@ document.addEventListener("DOMContentLoaded", () => {
       typeof RENNES_TEAM !== "undefined" ? RENNES_TEAM : null,
       typeof STRASBOURG_TEAM !== "undefined" ? STRASBOURG_TEAM : null,
       typeof BRAGA_TEAM !== "undefined" ? BRAGA_TEAM : null,
+      typeof SCHALKE04_TEAM !== "undefined" ? SCHALKE04_TEAM : null,
+      typeof FREIBURG_TEAM !== "undefined" ? FREIBURG_TEAM : null,
+      typeof STUTTGART_TEAM !== "undefined" ? STUTTGART_TEAM : null,
+      typeof FRANKFURT_TEAM !== "undefined" ? FRANKFURT_TEAM : null,
+      typeof MAINZ_TEAM !== "undefined" ? MAINZ_TEAM : null,
+      typeof AUGSBURG_TEAM !== "undefined" ? AUGSBURG_TEAM : null,
+      typeof BREMEN_TEAM !== "undefined" ? BREMEN_TEAM : null,
+      typeof RBLEIPZIG_TEAM !== "undefined" ? RBLEIPZIG_TEAM : null,
+      typeof KOLN_TEAM !== "undefined" ? KOLN_TEAM : null,
+      typeof HOFFENHEIM_TEAM !== "undefined" ? HOFFENHEIM_TEAM : null,
+      typeof UNIONBERLIN_TEAM !== "undefined" ? UNIONBERLIN_TEAM : null,
+      typeof HAMBURG_TEAM !== "undefined" ? HAMBURG_TEAM : null,
+      typeof MONZA_TEAM !== "undefined" ? MONZA_TEAM : null,
+      typeof GENOA_TEAM !== "undefined" ? GENOA_TEAM : null,
+      typeof NICE_TEAM !== "undefined" ? NICE_TEAM : null,
+      typeof IPSWICH_TEAM !== "undefined" ? IPSWICH_TEAM : null,
+      typeof BETIS_TEAM !== "undefined" ? BETIS_TEAM : null,
+      typeof SEVILLA_TEAM !== "undefined" ? SEVILLA_TEAM : null,
+      typeof VALENCIA_TEAM !== "undefined" ? VALENCIA_TEAM : null,
+      typeof BODOGLIMT_TEAM !== "undefined" ? BODOGLIMT_TEAM : null,
+      typeof REDSTAR_TEAM !== "undefined" ? REDSTAR_TEAM : null,
+      typeof DINAMOZAGREB_TEAM !== "undefined" ? DINAMOZAGREB_TEAM : null,
+      typeof UNIONSG_TEAM !== "undefined" ? UNIONSG_TEAM : null,
+      typeof CLUBBRUGGE_TEAM !== "undefined" ? CLUBBRUGGE_TEAM : null,
+      typeof GENT_TEAM !== "undefined" ? GENT_TEAM : null,
+      typeof ANDERLECHT_TEAM !== "undefined" ? ANDERLECHT_TEAM : null,
+      typeof GENK_TEAM !== "undefined" ? GENK_TEAM : null,
+      typeof CHARLEROI_TEAM !== "undefined" ? CHARLEROI_TEAM : null,
+      typeof ANTWERP_TEAM !== "undefined" ? ANTWERP_TEAM : null,
+      typeof AZ_TEAM !== "undefined" ? AZ_TEAM : null,
+      typeof PSV_TEAM !== "undefined" ? PSV_TEAM : null,
+      typeof FEYENOORD_TEAM !== "undefined" ? FEYENOORD_TEAM : null,
+      typeof AJAX_TEAM !== "undefined" ? AJAX_TEAM : null,
+      typeof TWENTE_TEAM !== "undefined" ? TWENTE_TEAM : null,
+      typeof COPENHAGEN_TEAM !== "undefined" ? COPENHAGEN_TEAM : null,
+      typeof MIDTJYLLAND_TEAM !== "undefined" ? MIDTJYLLAND_TEAM : null,
+      typeof ALNASSR_TEAM !== "undefined" ? ALNASSR_TEAM : null,
+      typeof ALHILAL_TEAM !== "undefined" ? ALHILAL_TEAM : null,
+      typeof ALITTIHAD_TEAM !== "undefined" ? ALITTIHAD_TEAM : null,
+      typeof ALAHLI_TEAM !== "undefined" ? ALAHLI_TEAM : null,
     ].filter(Boolean);
 
     europeanTeams.forEach(euroTeam => {
@@ -1762,10 +2029,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    // Filter by position
-    if (transferPosFilter !== "ALL") {
-      availableList = availableList.filter(item => item.player.pos === transferPosFilter);
-    }
+    // Filter by position & multi-filter criteria (rating, age, value, position)
+    availableList = availableList.filter(item => matchesMultiFilter(item.player));
 
     // Filter by nationality
     if (transferNatFilter !== "ALL") {
@@ -1861,10 +2126,8 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderSellMarket(grid) {
     let squadList = [...userTeam.squad];
 
-    // Filter by position
-    if (transferPosFilter !== "ALL") {
-      squadList = squadList.filter(p => p.pos === transferPosFilter);
-    }
+    // Filter by position & multi-filter criteria (rating, age, value, position)
+    squadList = squadList.filter(p => matchesMultiFilter(p));
 
     // Filter by nationality
     if (transferNatFilter !== "ALL") {
@@ -1999,6 +2262,46 @@ document.addEventListener("DOMContentLoaded", () => {
         typeof RENNES_TEAM !== "undefined" ? RENNES_TEAM : null,
         typeof STRASBOURG_TEAM !== "undefined" ? STRASBOURG_TEAM : null,
         typeof BRAGA_TEAM !== "undefined" ? BRAGA_TEAM : null,
+        typeof SCHALKE04_TEAM !== "undefined" ? SCHALKE04_TEAM : null,
+        typeof FREIBURG_TEAM !== "undefined" ? FREIBURG_TEAM : null,
+        typeof STUTTGART_TEAM !== "undefined" ? STUTTGART_TEAM : null,
+        typeof FRANKFURT_TEAM !== "undefined" ? FRANKFURT_TEAM : null,
+        typeof MAINZ_TEAM !== "undefined" ? MAINZ_TEAM : null,
+        typeof AUGSBURG_TEAM !== "undefined" ? AUGSBURG_TEAM : null,
+        typeof BREMEN_TEAM !== "undefined" ? BREMEN_TEAM : null,
+        typeof RBLEIPZIG_TEAM !== "undefined" ? RBLEIPZIG_TEAM : null,
+        typeof KOLN_TEAM !== "undefined" ? KOLN_TEAM : null,
+        typeof HOFFENHEIM_TEAM !== "undefined" ? HOFFENHEIM_TEAM : null,
+        typeof UNIONBERLIN_TEAM !== "undefined" ? UNIONBERLIN_TEAM : null,
+        typeof HAMBURG_TEAM !== "undefined" ? HAMBURG_TEAM : null,
+        typeof MONZA_TEAM !== "undefined" ? MONZA_TEAM : null,
+        typeof GENOA_TEAM !== "undefined" ? GENOA_TEAM : null,
+        typeof NICE_TEAM !== "undefined" ? NICE_TEAM : null,
+        typeof IPSWICH_TEAM !== "undefined" ? IPSWICH_TEAM : null,
+        typeof BETIS_TEAM !== "undefined" ? BETIS_TEAM : null,
+        typeof SEVILLA_TEAM !== "undefined" ? SEVILLA_TEAM : null,
+        typeof VALENCIA_TEAM !== "undefined" ? VALENCIA_TEAM : null,
+        typeof BODOGLIMT_TEAM !== "undefined" ? BODOGLIMT_TEAM : null,
+        typeof REDSTAR_TEAM !== "undefined" ? REDSTAR_TEAM : null,
+        typeof DINAMOZAGREB_TEAM !== "undefined" ? DINAMOZAGREB_TEAM : null,
+        typeof UNIONSG_TEAM !== "undefined" ? UNIONSG_TEAM : null,
+        typeof CLUBBRUGGE_TEAM !== "undefined" ? CLUBBRUGGE_TEAM : null,
+        typeof GENT_TEAM !== "undefined" ? GENT_TEAM : null,
+        typeof ANDERLECHT_TEAM !== "undefined" ? ANDERLECHT_TEAM : null,
+        typeof GENK_TEAM !== "undefined" ? GENK_TEAM : null,
+        typeof CHARLEROI_TEAM !== "undefined" ? CHARLEROI_TEAM : null,
+        typeof ANTWERP_TEAM !== "undefined" ? ANTWERP_TEAM : null,
+        typeof AZ_TEAM !== "undefined" ? AZ_TEAM : null,
+        typeof PSV_TEAM !== "undefined" ? PSV_TEAM : null,
+        typeof FEYENOORD_TEAM !== "undefined" ? FEYENOORD_TEAM : null,
+        typeof AJAX_TEAM !== "undefined" ? AJAX_TEAM : null,
+        typeof TWENTE_TEAM !== "undefined" ? TWENTE_TEAM : null,
+        typeof COPENHAGEN_TEAM !== "undefined" ? COPENHAGEN_TEAM : null,
+        typeof MIDTJYLLAND_TEAM !== "undefined" ? MIDTJYLLAND_TEAM : null,
+        typeof ALNASSR_TEAM !== "undefined" ? ALNASSR_TEAM : null,
+        typeof ALHILAL_TEAM !== "undefined" ? ALHILAL_TEAM : null,
+        typeof ALITTIHAD_TEAM !== "undefined" ? ALITTIHAD_TEAM : null,
+        typeof ALAHLI_TEAM !== "undefined" ? ALAHLI_TEAM : null,
       ].filter(Boolean);
       sellerTeam = allEuroTeams.find(t => t.id === sellerTeamId) || null;
     }
